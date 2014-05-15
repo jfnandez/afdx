@@ -1,0 +1,176 @@
+with AFDX.In_Buffers.Dispatcher.Executor;
+--with AFDX.Out_Buffers.Dispatcher.Executor;
+
+package body AFDX.System is
+
+
+   procedure Initialize -- raises Invalid_Port
+     (This             :    out Send_Socket;
+      Virtual_Link     : in     Virtual_Link_ID;
+      Sub_Virtual_Link : in     Sub_Virtual_Link_ID;
+      Destination_Port : in     Port_ID;
+      Source_Port      : in     Port_ID)
+   is
+
+      VL_ID  : constant Virtual_Links.ID_Range
+        := Virtual_Links.ID_Range(Virtual_Link);
+
+      VL     : constant Virtual_Links.Object_Acc
+        := Virtual_Links.Retrieve(VL_ID);
+
+      SVL_ID : constant Virtual_Links.Sub_Virtual_Link_Range
+        := Virtual_Links.Sub_Virtual_Link_Range(Sub_Virtual_Link);
+
+      SP_ID : constant Ports.ID_Range := Ports.ID_Range(Source_Port);
+      DP_ID : constant Ports.ID_Range := Ports.ID_Range(Destination_Port);
+
+      use type Virtual_Links.Sub_Virtual_Link_Range;
+
+   begin
+
+      if This.Is_Ready then
+         AFDX.Display("Send Socket: Already initialized");
+         raise Program_Error;
+      end if;
+
+
+      if VL.Is_Source then
+
+         This.Event            := AFDX.Out_Buffers.Dispatcher.Retrieve(VL_ID);
+         This.Destination_Port := DP_ID;
+         This.Source_Port      := SP_ID;
+
+         if SVL_ID <= VL.Number_Of_Sub_Virtual_Links then
+            This.Sub_Virtual_Link := SVL_ID;
+         else
+            AFDX.Display("Sub Virtual Link no valido");
+            raise Invalid_Sub_Virtual_Link;
+         end if;
+
+         This.Is_Ready := True;
+      else
+         AFDX.Display("Send Socket: Not sending to Virtual Link" & VL_ID'Img);
+         raise Invalid_Virtual_Link;
+      end if;
+
+
+   end Initialize;
+
+
+
+
+   procedure Send -- raises Overflow
+     (This    : in out Send_Socket;
+      Message : in     Stream_Element_Array)
+   is
+   begin
+
+      if This.Is_Ready then
+         This.Event.Put
+           (Message          => Message,
+            Destination_Port => This.Destination_Port,
+            Source_Port      => This.Source_Port,
+            Sub_Virtual_Link => This.Sub_Virtual_Link);
+      else
+         raise Not_Ready;
+      end if;
+
+   exception
+
+      when others => --?? Cual exactamente?
+         raise Overflow;
+
+   end Send;
+
+
+
+   procedure Initialize
+     (This         :    out Receive_Socket;
+      Virtual_Link : in     Virtual_Link_ID;
+      Port         : in     Port_ID;
+      Mode         : in     Port_Type;
+      Is_Blocking  : in     Boolean := False)
+   is
+      VL_ID : constant Virtual_Links.ID_Range := Virtual_Links.ID_Range(Virtual_Link);
+      P_ID  : constant Ports.ID_Range         := Ports.ID_Range(Port);
+   begin
+
+      if This.Is_Ready then
+         AFDX.Display("Receive Socket: Already Initialized");
+         raise Program_Error;
+      elsif AFDX.In_Buffers.Contains(P_ID) then
+         AFDX.Display("Receive Socket: Port Already Binded");
+         raise Invalid_Port;
+      end if;
+
+
+      if Virtual_Links.Retrieve(VL_ID).Is_Destination then
+
+         This.Is_Blocking := Is_Blocking;
+
+         case Mode is
+
+            when Sampling  =>
+               AFDX.In_Buffers.Create
+                 (ID   => P_ID,
+                  Mode => Ports.SAMPLING,
+                  Size => 1000);
+
+            when Queueing =>
+               AFDX.In_Buffers.Create
+                 (ID   => P_ID,
+                  Mode => Ports.QUEUEING ,
+                  Size => 1000);
+
+         end case;
+
+         This.Buffer := AFDX.In_Buffers.Retrieve(P_ID);
+         This.Is_Ready := True;
+
+      else
+         AFDX.Display("Receive Socket: Not receiving from Virtual Link" & VL_ID'Img);
+         raise Program_Error;
+      end if;
+
+
+
+
+   end Initialize;
+
+
+
+
+   procedure Receive
+     (This      : in     Receive_Socket;
+      Message   :    out Stream_Element_Array;
+      Length    :    out Stream_Element_Count;
+      Freshness :    out Time)
+   is
+   begin
+
+      case This.Is_Blocking is
+         when True  =>
+            This.Buffer.Blocking_Get
+              (Message   => Message,
+               Length    => Length,
+               Freshness => Freshness);
+
+         when False =>
+            This.Buffer.Non_Blocking_Get
+              (Message   => Message,
+               Length    => Length,
+               Freshness => Freshness);
+      end case;
+
+
+   end Receive;
+
+
+
+begin
+
+
+   AFDX.In_Buffers.Dispatcher.Executor.Release;
+   --AFDX.Out_Buffers.Dispatcher.Executor.Release;
+
+end AFDX.System;
