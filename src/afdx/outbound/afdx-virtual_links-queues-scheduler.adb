@@ -25,7 +25,7 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
 
 
    -- Only used throughout the Scheduller
-   Event_Queue   : Event_Prio_Qs.Heap(Virtual_Links.Pool.Number_Out + 1);
+   Event_Queue   : Event_Prio_Qs.Heap(Virtual_Links.Pool.Items_Out + 1);
    Reset_Enabled : Boolean := False;
 
 
@@ -117,7 +117,7 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
 
 begin
 
-   if Virtual_Links.Pool.Number_Out > 0 then
+   if Virtual_Links.Pool.Items_Out > 0 then
       --pragma Debug("Scheduler creado para" & Virtual_Links.Pool.Number_Out'Img & " eventos.");
       null;
    end if;

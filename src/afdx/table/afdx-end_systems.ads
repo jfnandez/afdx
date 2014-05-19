@@ -9,10 +9,17 @@ package AFDX.End_Systems is
    function ID     (This : in Object) return ID_Range;
    function MAC    (This : in Object) return Eth.Address;
    function IP     (This : in Object) return IPv4.Address;
+
    function Its_Me (This : in Object) return Boolean;
+   function Get_Me return Object_Acc;
 
+   package Maps is new Ada.Containers.Ordered_Maps
+     (Key_Type     => ID_Range,
+      Element_Type => Object_Acc,
+      "<"          => "<",
+      "="          => "=");
 
-
+   type Action_Procedure is access procedure (Cursor : in Maps.Cursor);
 
 private
 
@@ -22,5 +29,7 @@ private
          MAC  : Eth.Address;
          IP   : IPv4.Address;
       end record;
+
+   This_Object : Object_Acc := null;
 
 end AFDX.End_Systems;

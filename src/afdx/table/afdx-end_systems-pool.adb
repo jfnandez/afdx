@@ -1,10 +1,7 @@
 package body AFDX.End_Systems.Pool is
 
 
-   Object_Pool : ID_Map;
-
-   Device_ES   : Object_Acc := null;
-
+   Object_Pool : Maps.Map;
 
    --------------
    -- Contains --
@@ -21,10 +18,10 @@ package body AFDX.End_Systems.Pool is
    --------------
 
    function Retrieve (ID : in ID_Range) return Object_Acc is
-      Cursor : constant ID_Maps.Cursor := Object_Pool.Find(ID);
+      Cursor : constant Maps.Cursor := Object_Pool.Find(ID);
    begin
-      if ID_Maps.Has_Element(Cursor) then
-         return ID_Maps.Element(Cursor);
+      if Maps.Has_Element(Cursor) then
+         return Maps.Element(Cursor);
       else
          raise Not_Found;
       end if;
@@ -35,21 +32,25 @@ package body AFDX.End_Systems.Pool is
    -- Add --
    ---------
 
-   procedure Add (ID : in ID_Range; MAC : in STRING; IP : in STRING) is
+   procedure Add
+     (ID  : in ID_Range;
+      MAC : in STRING;
+      IP : in STRING)
+   is
 
       ES_Candidate : Object_Acc;
+      use type Eth.Address;
 
-      procedure Validation (Position : ID_Maps.Cursor) is
-         ES_Inserted : constant Object_Acc := ID_Maps.Element(Position);
-         use type Eth.Address;
+      procedure Validation (Position : Maps.Cursor) is
+         ES_Inserted : constant Object_Acc := Maps.Element(Position);
          use type IPv4.Address;
       begin
          if    (ES_Inserted.ID = ES_Candidate.ID) then
-            raise Definition_Error with "ES ID already used.";
+            raise Definition_Error with "Duplicated ES ID.";
          elsif (ES_Inserted.MAC = ES_Candidate.MAC) then
-            raise Definition_Error with "ES MAC already used.";
+            raise Definition_Error with "Duplicated ES MAC.";
          elsif (ES_Inserted.IP = ES_Candidate.IP) then
-            raise Definition_Error with "ES IP already used.";
+            raise Definition_Error with "Duplicated ES IP.";
          end if;
       end Validation;
 
@@ -66,9 +67,8 @@ package body AFDX.End_Systems.Pool is
         (Key      => ES_Candidate.ID,
          New_Item => ES_Candidate);
 
-      if ES_Candidate.Its_Me then
-         Device_IP := ES_Candidate.IP;
-         Device_ES := ES_Candidate;
+      if ES_Candidate.MAC = Network.Link.Address then
+         This_Object := ES_Candidate;
       end if;
 
    end Add;
@@ -84,26 +84,14 @@ package body AFDX.End_Systems.Pool is
    end Iterate;
 
 
-   ------------
-   -- Number --
-   ------------
+   -----------
+   -- Items --
+   -----------
 
-   function Number return Natural is
+   function Items return NATURAL is
    begin
       return Natural(Object_Pool.Length);
-   end Number;
-   pragma Inline(Number);
-
-
-   ----------
-   -- This --
-   ----------
-
-   function This return Object_Acc  is
-   begin
-      return Device_ES;
-   end This;
-   pragma Inline(This);
-
+   end Items;
+   pragma Inline(Items);
 
 end AFDX.End_Systems.Pool;

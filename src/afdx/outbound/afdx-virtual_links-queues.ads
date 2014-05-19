@@ -18,7 +18,7 @@ package AFDX.Virtual_Links.Queues is
 private
 
 
-   type SVL_Array is array (SVL_Range) of access Stream_Buffers.Stream_Buffer;
+   type SVL_Array is array (Sub_Virtual_Link_Range) of access Stream_Buffers.Stream_Buffer;
 
 
    ------------
@@ -35,7 +35,7 @@ private
         (Message          : in     Stream_Element_Array;
          Source_Port      : in     Ports.Port_Range;
          Destination_Port : in     Ports.Port_Range;
-         Sub_Virtual_Link : in     SVL_Range;
+         Sub_Virtual_Link : in     Sub_Virtual_Link_Range;
          Identifier       : in     Unsigned_16;
          Frame_Payload    : in     Unsigned_16;
          Size_Required    : in     Unsigned_16;
@@ -47,7 +47,7 @@ private
    private
       Virtual_Link : Virtual_Links.Object_Acc;
       SVL_List     : SVL_Array;
-      SVL_Pointer  : SVL_Range;
+      SVL_Pointer  : Sub_Virtual_Link_Range;
       Eth_Header   : Eth.Header;
       VLAN_Header  : Eth.V_LAN.Header;
       IP_Header    : IPv4.Header;

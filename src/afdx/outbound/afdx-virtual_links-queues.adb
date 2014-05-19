@@ -14,7 +14,7 @@ package body AFDX.Virtual_Links.Queues is
 
          Eth_Header.Set
            (Destination => Eth.Broadcast, --??
-            Source      => Device_MAC,
+            Source      => End_Systems.Get_Me.MAC,
             EtherType   => Eth.VLAN);
 
          -- VLAN Header formation
@@ -49,15 +49,15 @@ package body AFDX.Virtual_Links.Queues is
             Time_To_Live        => 255,
             Protocol            => IPv4.UDP,
             Header_Checksum     => 0,
-            Source_IP           => Device_IP,
+            Source_IP           => End_Systems.Get_Me.IP,
             Destination_IP      => Virtual_Link.IP);
 
 
-         SVL_Pointer  := SVL_Range'Last;
+         SVL_Pointer  := Sub_Virtual_Link_Range'Last;
 
-         for SVL in SVL_Range loop
-            Buffer_Size := Stream_Element_Count(Virtual_Link.TX_Size(SVL));
-            if Virtual_Link.SVLs(SVL) then
+         for SVL in Sub_Virtual_Link_Range loop
+            Buffer_Size := Stream_Element_Count(Virtual_Link.Sub_Virtual_Link.TX_Size(SVL));
+            if Buffer_Size > 0 then
                SVL_List(SVL) := new Stream_Buffers.Stream_Buffer(Buffer_Size);
             end if;
          end loop;
@@ -69,7 +69,7 @@ package body AFDX.Virtual_Links.Queues is
         (Message          : in     Stream_Element_Array;
          Source_Port      : in     Ports.Port_Range;
          Destination_Port : in     Ports.Port_Range;
-         Sub_Virtual_Link : in     SVL_Range;
+         Sub_Virtual_Link : in     Sub_Virtual_Link_Range;
          Identifier       : in     Unsigned_16;
          Frame_Payload    : in     Unsigned_16;
          Size_Required    : in     Unsigned_16;
@@ -212,7 +212,7 @@ package body AFDX.Virtual_Links.Queues is
 
       begin
 
-         for SVL in SVL_Range loop
+         for SVL in Sub_Virtual_Link_Range loop
             SVL_Pointer := SVL_Pointer + 1;
             Buffer := SVL_List(SVL_Pointer);
             exit when (Buffer /= null) and then (not Buffer.Is_Empty);

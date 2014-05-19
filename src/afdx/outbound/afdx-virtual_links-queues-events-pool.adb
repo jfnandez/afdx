@@ -37,10 +37,10 @@ package body AFDX.Virtual_Links.Queues.Events.Pool is
    -- Create --
    -------------
 
-   procedure Create (Cursor : in Virtual_Links.Pool.ID_Maps.Cursor) is
+   procedure Create (Cursor : in Virtual_Links.Maps.Cursor) is
 
       Virt_Link : constant Virtual_Links.Object_Acc :=
-        Virtual_Links.Pool.ID_Maps.Element(Cursor);
+        Virtual_Links.Maps.Element(Cursor);
 
       New_Event : constant Object_Acc := new Object;
    begin

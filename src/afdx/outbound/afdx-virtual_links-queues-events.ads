@@ -8,7 +8,7 @@ package AFDX.Virtual_Links.Queues.Events is
       Message          : in     Stream_Element_Array;
       Destination_Port : in     Ports.Port_Range;
       Source_Port      : in     Ports.Port_Range;
-      Sub_Virtual_Link : in     Virtual_Links.SVL_Range;
+      Sub_Virtual_Link : in     Virtual_Links.Sub_Virtual_Link_Range;
       Single_Frame     : in     Boolean := False);
 
 private

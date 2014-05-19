@@ -53,18 +53,18 @@ package body Network is
 
       case N1 is
          when 0 .. 9 =>
-            Result(1) := Character'Val(Character'Pos('0') + N2);
+            Result(1) := Character'Val(Character'Pos('0') + N1);
          when 10 .. 15 =>
-            Result(1) := Character'Val(Character'Pos('A') + N2 - 10);
+            Result(1) := Character'Val(Character'Pos('A') + N1 - 10);
          when others =>
             raise Program_Error with "Never happends.";
       end case;
 
       case N2 is
          when 0 .. 9 =>
-            Result(2) := Character'Val(Character'Pos('0') + N1);
+            Result(2) := Character'Val(Character'Pos('0') + N2);
          when 10 .. 15 =>
-            Result(2) := Character'Val(Character'Pos('A') + N1 - 10);
+            Result(2) := Character'Val(Character'Pos('A') + N2 - 10);
          when others =>
             raise Program_Error with "Never happends.";
       end case;

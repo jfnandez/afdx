@@ -76,10 +76,10 @@ package body Network.Stack.Up.IP_Storage is
    -- Create --
    ------------
 
-   procedure Create (Cursor : in Virtual_Links.Pool.ID_Maps.Cursor) is
+   procedure Create (Cursor : in Virtual_Links.Maps.Cursor) is
 
       VL : constant Virtual_Links.Object_Acc :=
-        Virtual_Links.Pool.ID_Maps.Element(Cursor);
+        Virtual_Links.Maps.Element(Cursor);
 
       IP : constant Defs.IPv4.Address := VL.Destination_IP;
 
@@ -108,13 +108,13 @@ package body Network.Stack.Up.IP_Storage is
 
       --pragma Debug("Buffer llegada IP para VL:" & VL.ID'Img & '.');
 
-      for SVL in Virtual_Links.SVL_Range loop
+      for SVL in Virtual_Links.Sub_Virtual_Link_Range loop
 
-         if VL.SVL_Defined(SVL) then
+         if VL.Sub_Virtual_Link.Contains(SVL) then
 
             --pragma Debug(" SVL:" & SVL'Img);
 
-            Buffer_Size := Stream_Element_Count(VL.SVL_RX_Size(SVL));
+            Buffer_Size := Stream_Element_Count( VL.Sub_Virtual_Link.RX_Size(SVL));
 
             Identifier  := Virtual_Links.Gen_ID
               (VL  => VL.ID,

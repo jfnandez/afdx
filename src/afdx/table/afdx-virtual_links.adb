@@ -18,7 +18,7 @@ package body AFDX.Virtual_Links is
 
    function Source_IP  (This : in Object) return IPv4.Address is
    begin
-      return This.Source.IP;
+      return This.Src.IP;
    end Source_IP;
    pragma Inline (Source_IP);
 
@@ -33,6 +33,16 @@ package body AFDX.Virtual_Links is
    end Destination_IP;
    pragma Inline (Destination_IP);
 
+   --------------
+   -- Priority --
+   --------------
+
+   function Priority (This : in Object) return Prio_Enum is
+   begin
+      return This.Prio;
+   end Priority;
+   pragma Inline (Priority);
+
 
    ---------------
    -- Is_Source --
@@ -40,7 +50,7 @@ package body AFDX.Virtual_Links is
 
    function Is_Source (This : in Object) return BOOLEAN is
    begin
-      return This.Source.Its_Me;
+      return This.Is_Src;
    end Is_Source;
    pragma Inline (Is_Source);
 
@@ -51,41 +61,47 @@ package body AFDX.Virtual_Links is
 
    function Is_Destination (This : in Object) return BOOLEAN is
    begin
-      return This.Is_Dest;
+      return This.Is_Des;
    end Is_Destination;
    pragma Inline (Is_Destination);
 
 
-   -----------------
-   -- SVL_Defined --
-   -----------------
 
-   function SVL_Defined(This : in Object; SVL : in SVL_Range) return BOOLEAN is
+   function Sub_Virtual_Link (This : in Object) return Sub_Virtual_Link_Object_Acc is
    begin
-      return This.SVLs(SVL);
-   end SVL_Defined;
-   pragma Inline (SVL_Defined);
+      return This.Sub_VL;
+   end Sub_Virtual_Link;
+   pragma Inline (Sub_Virtual_Link);
 
-
-   -----------------
-   -- SVL_TX_Size --
-   -----------------
-
-   function SVL_TX_Size(This : in Object; SVL : in SVL_Range) return NATURAL is
+   function Contains
+     (This : in Sub_Virtual_Link_Object;
+      ID   : in Sub_Virtual_Link_Range) return BOOLEAN
+   is
    begin
-      return This.TX_Size(SVL);
-   end SVL_TX_Size;
-   pragma Inline (SVL_TX_Size);
+      return This.List(ID);
+   end Contains;
+   pragma Inline (Contains);
 
-   -----------------
-   -- SVL_RX_Size --
-   -----------------
-
-   function SVL_RX_Size(This : in Object; SVL : in SVL_Range) return NATURAL is
+   function TX_Size
+     (This : in Sub_Virtual_Link_Object;
+      ID   : in Sub_Virtual_Link_Range) return NATURAL
+   is
    begin
-      return This.RX_Size(SVL);
-   end SVL_RX_Size;
-   pragma Inline (SVL_RX_Size);
+      return This.TX_Size(ID);
+   end TX_Size;
+   pragma Inline (TX_Size);
+
+
+   function RX_Size
+     (This : in Sub_Virtual_Link_Object;
+      ID   : in Sub_Virtual_Link_Range) return NATURAL
+   is
+   begin
+      return This.RX_Size(ID);
+   end RX_Size;
+   pragma Inline (RX_Size);
+
+
 
 
    -------------------------
@@ -113,7 +129,7 @@ package body AFDX.Virtual_Links is
 
    function Gen_ID
      (VL  : in Virtual_Links.ID_Range;
-      SVL : in Virtual_Links.SVL_Range) return Unsigned_16
+      SVL : in Virtual_Links.Sub_Virtual_Link_Range) return Unsigned_16
    is
       VL16  : constant Unsigned_16 := Unsigned_16(VL);
       SVL16 : constant Unsigned_16 := Unsigned_16(SVL);
