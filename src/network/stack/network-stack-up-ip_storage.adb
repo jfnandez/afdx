@@ -1,41 +1,70 @@
 with Ada.Containers.Ordered_Maps;
+with Ada.Containers.Ordered_Sets;
 use  Ada.Containers;
 
-with AFDX;
 with AFDX.Virtual_Links;
 with AFDX.Virtual_Links.Pool;
-with AFDX.Definitions;
-
-use AFDX;
+use  AFDX;
 
 package body Network.Stack.Up.IP_Storage is
 
-   package ID_Maps is new Ordered_Maps
-     (Key_Type     => Unsigned_16,
-      Element_Type => IP_Buffers.Object_Acc,
-      "<"          => "<",
-      "="          => IP_Buffers."=");
+   use type Network.Defs.IPv4.Address;
 
-   type ID_Map is new ID_Maps.Map with null record;
-   type ID_Map_Acc is access all ID_Map;
+   type Search_Object is
+      record
+         Source      : IPv4.Address;
+         Destination : IPv4.Address;
+         Identifier  : Unsigned_16;
+      end record;
 
+   function Search_Object_Comparator
+     (Left, Right : in Search_Object) return Boolean
+   is
+   begin
+      if (Left.Identifier < Right.Identifier) then
+         return True;
+      elsif (Left.Identifier > Right.Identifier) then
+         return False;
+      else
+         if (Left.Source < Right.Source) then
+            return True;
+         elsif (Left.Source > Right.Source) then
+            return False;
+         else
+            if (Left.Destination < Right.Destination) then
+               return True;
+            elsif (Left.Destination > Right.Destination) then
+               return False;
+            else
+               return False;
+            end if;
+         end if;
+      end if;
+   end Search_Object_Comparator;
 
-   package IP_Maps is new Ordered_Maps
-     (Key_Type     => IPv4.Address,
-      Element_Type => ID_Map_Acc,
-      "<"          => IPv4."<",
+   package Buffer_Maps is new Ordered_Maps
+     (Key_Type     => Search_Object,
+      Element_Type => Object_Acc,
+      "<"          => Search_Object_Comparator,
       "="          => "=");
 
+   package IP_Sets is new Ordered_Sets
+     (Element_Type => IPv4.Address,
+      "<" => "<",
+      "=" => "=");
 
-   Accepting_IP_Map : IP_Maps.Map;
+   Buffer_Map : Buffer_Maps.Map;
+   IP_Set     : IP_Sets.Set; -- Valid Destination IP Addresses.
 
    -------------------
    -- Acceptable_IP --
    -------------------
 
-   function Acceptable_IP (IP : in IPv4.Address) return BOOLEAN is
+   function Acceptable_IP
+     (Destination : in IPv4.Address) return Boolean
+   is
    begin
-      return Accepting_IP_Map.Contains(IP);
+      return IP_Set.Contains(Destination);
    end Acceptable_IP;
 
 
@@ -44,32 +73,72 @@ package body Network.Stack.Up.IP_Storage is
    ----------
 
    function Find
-     (IP : in IPv4.Address; ID : in  Unsigned_16) return IP_Buffers.Object_Acc
+     (Source      : in IPv4.Address;
+      Destination : in IPv4.Address;
+      Identifier  : in  Unsigned_16) return Object_Acc
    is
-      Cursor_IP    : IP_Maps.Cursor;
-      Cursor_ID    : ID_Maps.Cursor;
-      Assoc_ID_Map : ID_Map_Acc;
-      Found_Buffer : IP_Buffers.Object_Acc := null;
+
+      Cursor : constant Buffer_Maps.Cursor := Buffer_Map.Find
+        (Search_Object'
+           (Source      => Source,
+            Destination => Destination,
+            Identifier  => Identifier));
 
    begin
 
-      Cursor_IP := Accepting_IP_Map.Find(IP);
+      if Buffer_Maps.Has_Element(Cursor) then
+         return Buffer_Maps.Element(Cursor);
+      else
+         return null;
+      end if;
 
-      if IP_Maps.Has_Element(Cursor_IP) then
+   end Find;
 
-         Assoc_ID_Map := IP_Maps.Element(Cursor_IP);
 
-         Cursor_ID := Assoc_ID_Map.Find(ID);
 
-         if ID_Maps.Has_Element(Cursor_ID) then
-            Found_Buffer := ID_Maps.Element(Cursor_ID);
+
+
+
+
+   procedure Put
+     (This     : in out Object;
+      Stream   : in     Stream_Element_Array;
+      Offset   : in     Stream_Element_Count;
+      MF_Flag  : in     Boolean;
+      Is_Ready :    out Boolean)
+   is
+      Length : constant Stream_Element_Count := Stream'Length;
+   begin
+
+      Is_Ready := False;
+
+      if (This.Stored /= Offset) then
+
+         This.Total  := 0;
+         This.Stored := 0;
+         --pragma Debug("Fragment not received in sequence");
+
+      else
+
+         This.Buffer(Offset+1 .. Offset+Length) := Stream;
+
+         This.Stored := This.Stored + Length;
+
+         if not MF_Flag then
+            Is_Ready    := True;
+            This.Total  := This.Stored;
+            This.Stored := 0;
          end if;
 
       end if;
 
-      return Found_Buffer;
+   end Put;
 
-   end Find;
+
+   function Get (This : in Object) return Stream_Element_Array is
+   begin
+      return This.Buffer(1 .. This.Total);
+   end Get;
 
 
    ------------
@@ -78,51 +147,36 @@ package body Network.Stack.Up.IP_Storage is
 
    procedure Create (Cursor : in Virtual_Links.Maps.Cursor) is
 
-      VL : constant Virtual_Links.Object_Acc :=
+      Virtual_Link     : constant Virtual_Links.Object_Acc :=
         Virtual_Links.Maps.Element(Cursor);
 
-      IP : constant Defs.IPv4.Address := VL.Destination_IP;
+      Sub_Virtual_Link : constant Virtual_Links.Sub_Virtual_Link_Object_Acc :=
+        Virtual_Link.Sub_Virtual_Link;
 
-      Cursor_IP : constant IP_Maps.Cursor := Accepting_IP_Map.Find(IP);
-
-      Assoc_Maps_Id : ID_Map_Acc;
-      Identifier    : Unsigned_16;
-      Buffer_Size   : Stream_Element_Count;
+      Buffer_Size      : Stream_Element_Count;
 
    begin
 
-      if not IP_Maps.Has_Element(Cursor_IP) then
-
-         --pragma Debug("Accepting IP: " & Defs.IPv4.To_String(IP));
-
-         Assoc_Maps_Id := new ID_Map;
-
-         Accepting_IP_Map.Insert
-           (Key      => IP,
-            New_Item => Assoc_Maps_Id);
-
-      else
-         Assoc_Maps_Id := IP_Maps.Element(Cursor_IP);
-      end if;
-
+      IP_Set.Include(Virtual_Link.Destination_IP);
 
       --pragma Debug("Buffer llegada IP para VL:" & VL.ID'Img & '.');
 
-      for SVL in Virtual_Links.Sub_Virtual_Link_Range loop
+      for I in Virtual_Links.Sub_Virtual_Link_Range loop
 
-         if VL.Sub_Virtual_Link.Contains(SVL) then
+         Buffer_Size := Stream_Element_Count(Sub_Virtual_Link.RX_Size(I));
+
+         if Buffer_Size > 0 then
 
             --pragma Debug(" SVL:" & SVL'Img);
 
-            Buffer_Size := Stream_Element_Count( VL.Sub_Virtual_Link.RX_Size(SVL));
-
-            Identifier  := Virtual_Links.Gen_ID
-              (VL  => VL.ID,
-               SVL => SVL);
-
-            Assoc_Maps_Id.Insert
-              (Key      => Identifier,
-               New_Item => new Up.IP_Buffers.Object(Buffer_Size));
+            Buffer_Map.Insert
+              (Key      => Search_Object'
+                 (Source      => Virtual_Link.Source_IP,
+                  Destination => Virtual_Link.Destination_IP,
+                  Identifier  => Virtual_Links.Gen_ID
+                    (VL  => Virtual_Link.ID,
+                     SVL => I)),
+               New_Item => new Object(Buffer_Size));
 
          end if;
 

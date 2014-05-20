@@ -12,6 +12,9 @@ package Network.Defs.IPv4 is
    type Address is private;
    function "=" (Left, Right : in Address) return Boolean;
    function "<" (Left, Right : in Address) return Boolean;
+   function "<=" (Left, Right : in Address) return Boolean;
+   function ">" (Left, Right : in Address) return Boolean;
+   function ">=" (Left, Right : in Address) return Boolean;
    function Parse (Src : in String) return Address;
    function To_String(Addrs : in Address) return String;
 

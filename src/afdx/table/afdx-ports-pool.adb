@@ -13,12 +13,13 @@ package body AFDX.Ports.Pool is
    ---------
 
    procedure Add
-     (Port                   : in Port_Range;
-      Mode                   : in Port_Type;
-      Virtual_Link           : in Virtual_Links.ID_Range;
-      Sub_Virtual_Link_ID : in Virtual_Links.Sub_Virtual_Link_Range)
+     (Port             : in Port_Range;
+      Mode             : in Port_Type;
+      Virtual_Link     : in Virtual_Links.ID_Range;
+      Sub_Virtual_Link : in Virtual_Links.Sub_Virtual_Link_Range)
    is
-      Port_Candidate : Object_Acc;
+      Port_Candidate        : Object_Acc;
+      Port_Sub_Virtual_Link : Virtual_Links.Sub_Virtual_Link_Object_Acc;
    begin
 
       if Object_Pool.Contains(Port) then
@@ -26,15 +27,16 @@ package body AFDX.Ports.Pool is
       end if;
 
       Port_Candidate := new Object'
-        (Port   => Port,
-         Mode   => Mode,
-         VL     => Virtual_Links.Pool.Retrieve(Virtual_Link),
-         SVL_ID => Sub_Virtual_Link_ID);
+        (Port             => Port,
+         Mode             => Mode,
+         Virtual_Link     => Virtual_Links.Pool.Retrieve(Virtual_Link),
+         Sub_Virtual_Link => Sub_Virtual_Link);
 
-      if not Port_Candidate.VL.Sub_Virtual_Link.Contains(Sub_Virtual_Link_ID) then
+      Port_Sub_Virtual_Link := Port_Candidate.Virtual_Link.Sub_Virtual_Link;
+
+      if not Port_Sub_Virtual_Link.Contains(Sub_Virtual_Link) then
          raise Definition_Error with "Invalid Sub Virtual Link.";
       end if;
-
 
       Object_Pool.Insert
         (Key      => Port_Candidate.Port,
@@ -61,7 +63,7 @@ package body AFDX.Ports.Pool is
    -- Contains --
    --------------
 
-   function Contains (Port : in Port_Range) return BOOLEAN is
+   function Contains (Port : in Port_Range) return Boolean is
    begin
       return Object_Pool.Contains(Port);
    end Contains;
@@ -138,5 +140,8 @@ package body AFDX.Ports.Pool is
       return Natural(Object_Pool_SAMPLING.Length);
    end Items_SAMPLING;
 
+begin
+
+   Put_Line("AFDX-Port-Pool Ready");
 
 end AFDX.Ports.Pool;

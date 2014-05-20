@@ -131,7 +131,7 @@ package body AFDX.Virtual_Links.Pool is
    -- Contains --
    --------------
 
-   function Contains(ID : in ID_Range) return BOOLEAN is
+   function Contains(ID : in ID_Range) return Boolean is
    begin
       return Object_Pool.Contains(ID);
    end Contains;
@@ -193,6 +193,8 @@ package body AFDX.Virtual_Links.Pool is
       return Natural(Object_Pool_Out.Length);
    end Items_Out;
 
+begin
 
+      Put_Line("AFDX-VL-Pool Ready");
 
 end AFDX.Virtual_Links.Pool;

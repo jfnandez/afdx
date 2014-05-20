@@ -1,6 +1,5 @@
 package body Stream_Buffers is
 
-
    -----------
    -- Write --
    -----------
@@ -13,12 +12,8 @@ package body Stream_Buffers is
       Item_First  : Stream_Element_Offset;
       Item_Last   : Stream_Element_Offset;
       New_Head    : Stream_Element_Offset;
-      Is_Writable : constant BOOLEAN := Item'Length <= This.Writable_Elements;
+      Is_Writable : constant Boolean := Item'Length <= This.Writable_Elements;
    begin
-
-      pragma Assert
-        (Is_Writable,
-         "STREAM_BUFFERS Write(): OVERFLOW.");
 
       if not Is_Writable then
          raise BUFFER_OVERFLOW;
@@ -27,23 +22,23 @@ package body Stream_Buffers is
       New_Head := This.Head + Item'Length - 1;
 
       if New_Head < This.Size then
-	 -- La posicion de la nueva cabeza no excede el limite
-	 This.Data(This.Head .. New_Head) := Item;
+         -- La posicion de la nueva cabeza no excede el limite
+         This.Data(This.Head .. New_Head) := Item;
 
       else
-	 -- La posicion de la nueva cabeza excede el limite,
-	 -- es necesario partir el mensaje en dos.
+         -- La posicion de la nueva cabeza excede el limite,
+         -- es necesario partir el mensaje en dos.
 
-	 -- Primer trozo que completa el final:
-	 Item_First := Item'First;
-	 Item_Last  := Item_First + This.Size - This.Head;
-	 This.Data(This.Head .. This.Size) := Item(Item_First .. Item_Last);
+         -- Primer trozo que completa el final:
+         Item_First := Item'First;
+         Item_Last  := Item_First + This.Size - This.Head;
+         This.Data(This.Head .. This.Size) := Item(Item_First .. Item_Last);
 
-	 -- Segundo trozo al comienzo:
-	 Item_First := Item_Last + 1;
-	 Item_Last  := Item'Last;
-	 New_Head   := Item_Last - Item_First + 1;
-	 This.Data(1 .. New_Head) := Item(Item_First .. Item_Last);
+         -- Segundo trozo al comienzo:
+         Item_First := Item_Last + 1;
+         Item_Last  := Item'Last;
+         New_Head   := Item_Last - Item_First + 1;
+         This.Data(1 .. New_Head) := Item(Item_First .. Item_Last);
 
       end if;
 
@@ -63,47 +58,83 @@ package body Stream_Buffers is
       Item :    out Stream_Element_Array;
       Last :    out Stream_Element_Offset)
    is
-      Item_First  : Stream_Element_Offset;
-      Item_Last   : Stream_Element_Offset;
-      New_Tail    : Stream_Element_Offset;
-      Is_Readable : constant BOOLEAN := Item'Length <= This.Readable_Elements;
+      Item_First    : Stream_Element_Offset;
+      Item_Last     : Stream_Element_Offset;
+      New_Tail      : Stream_Element_Offset;
+      Full_Readable : constant Boolean
+        := Item'Length <= This.Readable_Elements;
    begin
 
-      pragma Assert
-        (Is_Readable,
-         "STREAM_BUFFERS Read(): UNDERFLOW.");
+      Last := Item'First - 1;
 
-      if not Is_Readable then
-         raise BUFFER_UNDERFLOW;
-      end if;
+      if Full_Readable then
 
-      New_Tail := This.Tail + Item'Length - 1;
+         New_Tail := This.Tail + Item'Length - 1;
 
-      if New_Tail < This.Size then
-	 -- La posicion de la nueva cola no excede el limite
-	 Item := This.Data(This.Tail .. New_Tail);
+         if New_Tail < This.Size then
+            -- La posicion de la nueva cola no excede el limite
+            Item := This.Data(This.Tail .. New_Tail);
+
+         else
+            -- La posicion de la nueva cola excede el limite, es necesario
+            -- recoger el trozo del final y lo necesario del principio.
+
+            -- Primer trozo hasta el final:
+            Item_First := Item'First;
+            Item_Last  := Item_First + This.Size - This.Tail;
+            Item(Item_First .. Item_Last) := This.Data(This.Tail .. This.Size);
+
+            -- Segundo trozo al comienzo:
+            Item_First := Item_Last + 1;
+            Item_Last  := Item'Last;
+            New_Tail   := Item_Last - Item_First + 1;
+            Item(Item_First .. Item_Last) := This.Data(1 .. New_Tail);
+
+         end if;
+
+         This.Tail := New_Tail + 1;
+         This.Free := This.Free + Item'Length;
+
+         Last := Item'Last;
 
       else
-	 -- La posicion de la nueva cola excede el limite, es necesario
-	 -- recoger el trozo del final y lo necesario del principio.
 
-	 -- Primer trozo hasta el final:
-	 Item_First := Item'First;
-	 Item_Last  := Item_First + This.Size - This.Tail;
-	 Item(Item_First .. Item_Last) := This.Data(This.Tail .. This.Size);
+         if This.Is_Empty then
+            return;
+         end if;
 
-	 -- Segundo trozo al comienzo:
-	 Item_First := Item_Last + 1;
-	 Item_Last  := Item'Last;
-	 New_Tail   := Item_Last - Item_First + 1;
-	 Item(Item_First .. Item_Last) := This.Data(1 .. New_Tail);
+         New_Tail := This.Tail + This.Readable_Elements - 1;
+
+         if New_Tail < This.Size then
+
+            -- La posicion de la nueva cola no excede el limite
+            Item_First := Item'First;
+            Item_Last  := Item'First + This.Readable_Elements - 1;
+            Item(Item_First .. Item_Last) := This.Data(This.Tail .. New_Tail);
+
+         else
+
+            -- La posicion de la nueva cola excede el limite, es necesario
+            -- recoger el trozo del final y lo necesario del principio.
+
+            -- Primer trozo hasta el final:
+            Item_First := Item'First;
+            Item_Last  := Item_First + This.Size - This.Tail;
+            Item(Item_First .. Item_Last) := This.Data(This.Tail .. This.Size);
+
+            -- Segundo trozo al comienzo:
+            New_Tail := This.Readable_Elements - (Item_Last - Item_First) - 1;
+            Item_First := Item_Last + 1;
+            Item_Last  := Item_Last + New_Tail;
+            Item(Item_First .. Item_Last) := This.Data(1 .. New_Tail);
+
+         end if;
+
+         Last := Item_Last;
+
+         This.Flush;
 
       end if;
-
-      This.Tail := New_Tail + 1;
-      This.Free := This.Free + Item'Length;
-
-      Last := Item'Last;
 
    end Read;
 

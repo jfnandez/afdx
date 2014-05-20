@@ -1,6 +1,6 @@
 package body AFDX.Virtual_Links.Queues.Scheduler.Executor is
 
-   Executor_Released : BOOLEAN := False;
+   Executor_Released : Boolean := False;
 
    task Executor is
       pragma Priority(AFDX.Outbound_Executor_Prio);
@@ -17,7 +17,8 @@ package body AFDX.Virtual_Links.Queues.Scheduler.Executor is
 
       accept Release;
 
-      --pragma Debug("Out_Buffer.Dispatcher.Executor Released");
+
+      Put_Line("Out_Buffer.Dispatcher.Executor Released");
 
       loop
          select

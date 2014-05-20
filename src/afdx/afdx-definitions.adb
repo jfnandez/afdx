@@ -40,7 +40,7 @@ begin
       Priority    => Virtual_Links.Prio_LOW,
       Lmax        => 200,
       IP          => "",
-      Source      => 2,
+      Source      => 1,
       Destination => (1 => 1),
       TX_Size     => (0 => 3500, 1 => 0, 2 => 0, 3 => 0),
       RX_Size     => (0 => 3500, 1 => 0, 2 => 0, 3 => 0));
@@ -49,11 +49,19 @@ begin
    pragma Debug(Put_Line("VL definidos correctamente."));
 
    Ports.Pool.Add
-     (Port                => 1,
-      Mode                => Ports.QUEUEING,
-      Virtual_Link        => 1,
-      Sub_Virtual_Link_ID => 1);
+     (Port             => 1,
+      Mode             => Ports.QUEUEING,
+      Virtual_Link     => 1,
+      Sub_Virtual_Link => 0);
+
+   Ports.Pool.Add
+     (Port             => 2,
+      Mode             => Ports.SAMPLING,
+      Virtual_Link     => 2,
+      Sub_Virtual_Link => 0);
 
    pragma Debug(Put_Line("Puertos definidos correctamente."));
+
+   Put_Line("AFDX-Definitions Ready");
 
 end AFDX.Definitions;

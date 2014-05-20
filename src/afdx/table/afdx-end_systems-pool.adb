@@ -7,7 +7,7 @@ package body AFDX.End_Systems.Pool is
    -- Contains --
    --------------
 
-   function Contains(ID : in ID_Range) return BOOLEAN is
+   function Contains(ID : in ID_Range) return Boolean is
    begin
       return Object_Pool.Contains(ID);
    end Contains;
@@ -93,5 +93,9 @@ package body AFDX.End_Systems.Pool is
       return Natural(Object_Pool.Length);
    end Items;
    pragma Inline(Items);
+
+begin
+
+   Put_Line("AFDX-ES-Pool Ready");
 
 end AFDX.End_Systems.Pool;

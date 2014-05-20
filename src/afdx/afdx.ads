@@ -16,7 +16,6 @@ pragma Warnings(On);
 with Network.Defs.Eth;
 with Network.Defs.IPv4;
 
-
 use Network.Defs;
 
 package AFDX is
@@ -32,14 +31,14 @@ package AFDX is
    Base_Prio  : constant System.Priority := System.Default_Priority;
    ---------------------------------------------------------------------
 
-   Outbound_Buffer_Ceil_Prio    : constant System.Priority := Base_Prio + 0;
-   Outbound_Scheduler_Ceil_Prio : constant System.Priority := Base_Prio + 1;
-   Outbound_Executor_Prio       : constant System.Priority := Base_Prio + 1;
+   Outbound_Buffer_Ceil_Prio    : constant System.Priority := Base_Prio + 2;
+   Outbound_Scheduler_Ceil_Prio : constant System.Priority := Base_Prio + 2;
+   Outbound_Executor_Prio       : constant System.Priority := Base_Prio + 2;
 
    ---------------------------------------------------------------------
 
-   Inbound_Executor_Prio        : constant System.Priority := Base_Prio - 1;
-   Inbound_Buffer_Ceil_Prio     : constant System.Priority := Base_Prio - 1;
+   Inbound_Executor_Prio        : constant System.Priority := Base_Prio + 1;
+   Inbound_Buffer_Ceil_Prio     : constant System.Priority := Base_Prio + 1;
 
    ---------------------------------------------------------------------
 

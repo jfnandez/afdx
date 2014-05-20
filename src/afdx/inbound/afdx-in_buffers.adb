@@ -3,17 +3,17 @@ package body AFDX.In_Buffers is
 
    protected body Sampling_Object is
 
-
-      overriding procedure Put (Stream : in Stream_Element_Array)
+      --overriding
+      procedure Put (Stream : in Stream_Element_Array)
       is
       begin
-         Counter := Stream'Length;
+         Counter              := Stream'Length;
          Buffer(1 .. Counter) := Stream;
-         Rcv_At   := Clock;
-         Is_Ready := True;
+         TimeStamp            := Clock;
+         Is_Ready             := True;
       end Put;
 
-
+      --overriding
       entry Blocking_Get
         (Message    : in out Stream_Element_Array;
          Length     :    out Stream_Element_Count;
@@ -22,11 +22,12 @@ package body AFDX.In_Buffers is
       begin
          Message   := Buffer(1 .. Counter);
          Length    := Counter;
-         Freshness := Rcv_At;
+         Freshness := TimeStamp;
       end Blocking_Get;
 
 
-      overriding procedure Non_Blocking_Get
+      --overriding
+      procedure Non_Blocking_Get
         (Message    : in out Stream_Element_Array;
          Length     :    out Stream_Element_Count;
          Freshness  :    out Time)
@@ -34,7 +35,7 @@ package body AFDX.In_Buffers is
       begin
          Message   := Buffer(1 .. Counter);
          Length    := Counter;
-         Freshness := Rcv_At;
+         Freshness := TimeStamp;
       end Non_Blocking_Get;
 
    end Sampling_Object;
@@ -45,53 +46,52 @@ package body AFDX.In_Buffers is
 
    protected body Queueing_Object is
 
-
-
-      overriding procedure Put
+      --overriding
+      procedure Put
         (Stream    : in     Stream_Element_Array) is
       begin
-         Stream_Element_Array'Output(Buffer, Stream);
+         Buffer.Write(Stream);
       end Put;
 
-
+      --overriding
       entry Blocking_Get
         (Message    : in out Stream_Element_Array;
          Length     :    out Stream_Element_Count;
          Freshness  :    out Time) when not Buffer.Is_Empty
       is
-         Output_Stream : constant Stream_Element_Array := Stream_Element_Array'Input(Buffer);
       begin
-         Length := Output_Stream'Length;
-         Message(Message'First .. Message'First + Length) := Output_Stream;
+
+         if Buffer.Readable_Elements < Message'Length then
+            requeue Blocking_Get;
+         end if;
+
+         Buffer.Read(Message, Length);
+         Length := Message'Length;
          Freshness := Time_First;
+
       end Blocking_Get;
 
-
-      overriding procedure Non_Blocking_Get
+      --overriding
+      procedure Non_Blocking_Get
         (Message    : in out Stream_Element_Array;
          Length     :    out Stream_Element_Count;
          Freshness  :    out Time)
       is
-
+         Last : Stream_Element_Offset;
       begin
-         Freshness := Time_First;
+
          if not Buffer.Is_Empty then
-            declare
-               Output_Stream : constant Stream_Element_Array := Stream_Element_Array'Input(Buffer);
-            begin
-               Length := Output_Stream'Length;
-               Message(Message'First .. Message'First + Length) := Output_Stream;
-            end;
+            Buffer.Read(Message, Last);
+            Length := Last - Message'First + 1;
          else
             Length := 0;
          end if;
+
+         Freshness := Time_First;
+
       end Non_Blocking_Get;
 
    end Queueing_Object;
-
-
-
-
 
 
 end AFDX.In_Buffers;

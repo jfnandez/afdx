@@ -13,7 +13,7 @@ package body Network.Stack.Up.Eth is
       First : Stream_Element_Offset;
       Last  : Stream_Element_Offset;
 
-      Ethe_Hdr  : Defs.Eth.Header;
+      Eth_Hdr  : Defs.Eth.Header;
       Src_Add   : Defs.Eth.Address;
       Dest_Add  : Defs.Eth.Address;
       Eth_Type  : Defs.Eth.EtherTypes;
@@ -21,7 +21,7 @@ package body Network.Stack.Up.Eth is
       VLAN_Hdr      : Defs.Eth.V_LAN.Header;
       Prio          : Defs.Eth.V_LAN.Priority;
       Iden          : Defs.Eth.V_LAN.Identifier;
-      Drop_Elegible : BOOLEAN;
+      Drop_Elegible : Boolean;
 
       use type Defs.Eth.Address;
       use type Defs.Eth.EtherTypes;
@@ -33,9 +33,9 @@ package body Network.Stack.Up.Eth is
       First := Eth_Stream'First;
       Last  := First + Defs.Eth.Header_Size - 1;
 
-      Ethe_Hdr.Set(Eth_Stream(First .. Last));
+      Eth_Hdr.Set(Eth_Stream(First .. Last));
 
-      Ethe_Hdr.Get
+      Eth_Hdr.Get
         (Destination => Dest_Add,
          Source      => Src_Add,
          Ethertype   => Eth_Type);

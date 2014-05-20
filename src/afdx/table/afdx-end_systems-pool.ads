@@ -8,7 +8,7 @@ package AFDX.End_Systems.Pool is
       MAC : in STRING;
       IP  : in STRING);
 
-   function Contains (ID : in ID_Range) return BOOLEAN;
+   function Contains (ID : in ID_Range) return Boolean;
 
    function Retrieve (ID : in ID_Range) return Object_Acc;
 

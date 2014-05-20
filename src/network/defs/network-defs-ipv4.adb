@@ -63,6 +63,22 @@ package body Network.Defs.IPv4 is
       return Unsigned_32(Left) < Unsigned_32(Right);
    end "<";
 
+      function "<=" (Left, Right : in Address) return Boolean is
+   begin
+      return Unsigned_32(Left) <= Unsigned_32(Right);
+   end "<=";
+
+      function ">" (Left, Right : in Address) return Boolean is
+   begin
+      return Unsigned_32(Left) > Unsigned_32(Right);
+   end ">";
+
+      function ">=" (Left, Right : in Address) return Boolean is
+   begin
+      return Unsigned_32(Left) >= Unsigned_32(Right);
+   end ">=";
+
+
    function To_String(Addrs : in Address) return String is
       T : constant Unsigned_32 := Unsigned_32(Addrs);
       B1: constant Unsigned_32 := Shift_Right(T, 24) and 16#000000FF#;

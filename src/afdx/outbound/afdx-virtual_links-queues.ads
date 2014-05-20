@@ -6,6 +6,7 @@ with Network.Defs.Eth.V_LAN;
 
 with Stream_Buffers;
 
+with AFDX.Definitions;
 
 package AFDX.Virtual_Links.Queues is
 
@@ -17,9 +18,16 @@ package AFDX.Virtual_Links.Queues is
 
 private
 
+   type Buffer_Array is array (Sub_Virtual_Link_Range) of
+     access Stream_Buffers.Stream_Buffer;
 
-   type SVL_Array is array (Sub_Virtual_Link_Range) of access Stream_Buffers.Stream_Buffer;
-
+   type Header_Pack is
+      record
+         Eth  : Network.Defs.Eth.Header;
+         VLAN : Network.Defs.Eth.V_LAN.Header;
+         IP   : Network.Defs.IPv4.Header;
+         UDP  : Network.Defs.UDP.Header;
+      end record;
 
    ------------
    -- Object --
@@ -29,7 +37,8 @@ private
 
       pragma Priority(AFDX.Outbound_Buffer_Ceil_Prio);
 
-      procedure Initialize (VL_Acc : in Virtual_Links.Object_Acc);
+      procedure Initialize
+        (ID : in Virtual_Links.ID_Range);
 
       procedure Put -- Raises AFDX.Overflow
         (Message          : in     Stream_Element_Array;
@@ -39,29 +48,26 @@ private
          Identifier       : in     Unsigned_16;
          Frame_Payload    : in     Unsigned_16;
          Size_Required    : in     Unsigned_16;
-         Inserted         :    out BOOLEAN);
+         Inserted         :    out Boolean);
 
       procedure Get -- Raises AFDX.Underflow
         (Frame  : out Network.Defs.Frame);
 
    private
-      Virtual_Link : Virtual_Links.Object_Acc;
-      SVL_List     : SVL_Array;
-      SVL_Pointer  : Sub_Virtual_Link_Range;
-      Eth_Header   : Eth.Header;
-      VLAN_Header  : Eth.V_LAN.Header;
-      IP_Header    : IPv4.Header;
-      UDP_Header   : UDP.Header;
+      Virtual_Link   : Virtual_Links.Object_Acc;
+      Buffer_Pointer : Sub_Virtual_Link_Range;
+      Buffers        : Buffer_Array;
+      Headers        : Header_Pack;
    end Object;
 
 
    type Queued_Event is tagged limited
       record
-         At_Time   : Time;
-         Period    : Time_Span;
-         Buffer    : Object_Acc;
-         Remaining : Natural;
-         Virt_Link : Virtual_Links.Object_Acc;
+         At_Time      : Time;
+         Period       : Time_Span;
+         Queue        : Object_Acc;
+         Remaining    : Natural;
+         Virtual_Link : Virtual_Links.Object_Acc;
       end record;
 
 end AFDX.Virtual_Links.Queues;

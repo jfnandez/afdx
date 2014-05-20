@@ -8,7 +8,7 @@ package body Network.Defs.Eth.V_LAN is
      (This          :    out Header;
       Prio          : in     Priority;
       Iden          : in     Identifier;
-      Drop_Elegible : in     BOOLEAN;
+      Drop_Elegible : in     Boolean;
       Ethertype     : in     Eth.EtherTypes)
    is
       U16 : Unsigned_16;
@@ -37,7 +37,7 @@ package body Network.Defs.Eth.V_LAN is
      (This          : in     Header;
       Prio          :    out Priority;
       Iden          :    out Identifier;
-      Drop_Elegible :    out BOOLEAN;
+      Drop_Elegible :    out Boolean;
       Ethertype     :    out Eth.EtherTypes)
    is
       U16 : constant Unsigned_16 := From_Net16(This.Stream(1 .. 2));

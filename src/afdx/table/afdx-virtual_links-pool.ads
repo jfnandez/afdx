@@ -14,7 +14,7 @@ package AFDX.Virtual_Links.Pool is
       TX_Size     : in Sub_Virtual_Link_Size;
       RX_Size     : in Sub_Virtual_Link_Size);
 
-   function Contains(ID : in ID_Range) return BOOLEAN;
+   function Contains(ID : in ID_Range) return Boolean;
    function Retrieve(ID : in ID_Range) return Object_Acc;
 
    procedure Iterate     (Action : in Action_Procedure);

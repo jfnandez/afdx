@@ -15,11 +15,12 @@ private
          Amount    : in     Positive);
 
       procedure Get
-        (Buffer    :    out Queues.Object_Acc;
+        (Queue     :    out Queues.Object_Acc;
          At_Time   :    out Time;
          Next_Time :    out Time);
 
-      entry Reset (Next_Time : out Time);
+      entry Reset
+        (Next_Time :    out Time);
 
    end Scheduler;
 

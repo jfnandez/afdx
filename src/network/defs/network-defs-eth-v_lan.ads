@@ -17,14 +17,14 @@ package Network.Defs.Eth.V_LAN is
      (This          :    out Header;
       Prio          : in     Priority;
       Iden          : in     Identifier;
-      Drop_Elegible : in     BOOLEAN;
+      Drop_Elegible : in     Boolean;
       Ethertype     : in     Eth.EtherTypes);
 
    procedure Get
      (This          : in     Header;
       Prio          :    out Priority;
       Iden          :    out Identifier;
-      Drop_Elegible :    out BOOLEAN;
+      Drop_Elegible :    out Boolean;
       Ethertype     :    out Eth.EtherTypes);
 
    function Get (This : in Header) return Header_Stream;

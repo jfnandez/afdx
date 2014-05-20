@@ -44,11 +44,22 @@ package body AFDX.Virtual_Links is
    pragma Inline (Priority);
 
 
+   --------------
+   -- Priority --
+   --------------
+
+   function Lmax (This : in Object) return Positive is
+   begin
+      return This.Lmax;
+   end Lmax;
+   pragma Inline (Lmax);
+
+
    ---------------
    -- Is_Source --
    ---------------
 
-   function Is_Source (This : in Object) return BOOLEAN is
+   function Is_Source (This : in Object) return Boolean is
    begin
       return This.Is_Src;
    end Is_Source;
@@ -59,7 +70,7 @@ package body AFDX.Virtual_Links is
    -- Is_Destination --
    --------------------
 
-   function Is_Destination (This : in Object) return BOOLEAN is
+   function Is_Destination (This : in Object) return Boolean is
    begin
       return This.Is_Des;
    end Is_Destination;
@@ -75,7 +86,7 @@ package body AFDX.Virtual_Links is
 
    function Contains
      (This : in Sub_Virtual_Link_Object;
-      ID   : in Sub_Virtual_Link_Range) return BOOLEAN
+      ID   : in Sub_Virtual_Link_Range) return Boolean
    is
    begin
       return This.List(ID);

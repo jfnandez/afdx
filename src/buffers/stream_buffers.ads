@@ -6,7 +6,6 @@ package Stream_Buffers is
    pragma Pure;
 
    BUFFER_OVERFLOW  : exception;
-   BUFFER_UNDERFLOW : exception;
 
    type Stream_Buffer (Size : Stream_Element_Count)
      is new Root_Stream_Type with private;

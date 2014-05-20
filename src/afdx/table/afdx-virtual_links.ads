@@ -6,7 +6,7 @@ package AFDX.Virtual_Links is
    type ID_Array is array(Natural range <>) of ID_Range;
 
    type Sub_Virtual_Link_Range is mod 4;
-   type Sub_Virtual_Link_List is array (Sub_Virtual_Link_Range) of BOOLEAN;
+   type Sub_Virtual_Link_List is array (Sub_Virtual_Link_Range) of Boolean;
    type Sub_Virtual_Link_Size is array (Sub_Virtual_Link_Range) of NATURAL;
 
 
@@ -26,15 +26,16 @@ package AFDX.Virtual_Links is
 
    function ID               (This : in Object) return ID_Range;
    function Priority         (This : in Object) return Prio_Enum;
+   function Lmax             (This : in Object) return Positive;
    function Source_IP        (This : in Object) return IPv4.Address;
    function Destination_IP   (This : in Object) return IPv4.Address;
-   function Is_Source        (This : in Object) return BOOLEAN;
-   function Is_Destination   (This : in Object) return BOOLEAN;
+   function Is_Source        (This : in Object) return Boolean;
+   function Is_Destination   (This : in Object) return Boolean;
    function Sub_Virtual_Link (This : in Object) return Sub_Virtual_Link_Object_Acc;
 
    function Contains
      (This : in Sub_Virtual_Link_Object;
-      ID   : in Sub_Virtual_Link_Range) return BOOLEAN;
+      ID   : in Sub_Virtual_Link_Range) return Boolean;
 
    function TX_Size
      (This : in Sub_Virtual_Link_Object;
@@ -63,8 +64,8 @@ private
          IP     : IPv4.Address;
          Src    : End_Systems.Object_Acc;
          Des    : End_Systems.Maps.Map;
-         Is_Src : BOOLEAN;
-         Is_Des : BOOLEAN;
+         Is_Src : Boolean;
+         Is_Des : Boolean;
          Sub_VL : Sub_Virtual_Link_Object_Acc;
       end record;
 

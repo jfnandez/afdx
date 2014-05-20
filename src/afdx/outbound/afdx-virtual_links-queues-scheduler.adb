@@ -17,11 +17,11 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
 
    package Event_Prio_Qs is new Event_Structures.Heaps
      (">" => "<",
-      Top_Element => new Queued_Event'(At_Time   => Time_First,
-                                       Period    => Milliseconds(0),
-                                       Buffer    => null,
-                                       Virt_Link => null,
-                                       Remaining => 0));
+      Top_Element => new Queued_Event'(At_Time      => Time_First,
+                                       Period       => Milliseconds(0),
+                                       Queue        => null,
+                                       Virtual_Link => null,
+                                       Remaining    => 0));
 
 
    -- Only used throughout the Scheduller
@@ -67,7 +67,7 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
       ---------
 
       procedure Get
-        (Buffer    : out Virtual_Links.Queues.Object_Acc;
+        (Queue     : out Virtual_Links.Queues.Object_Acc;
          At_Time   : out Time;
          Next_Time : out Time)
       is
@@ -76,7 +76,7 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
 
          Event_Queue.Get(Event);
 
-         Buffer  := Event.Buffer;
+         Queue   := Event.Queue;
          At_Time := Event.At_Time;
 
          Event.Remaining := Event.Remaining - 1;
@@ -98,7 +98,9 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
       -- Reset --
       -----------
 
-      entry Reset (Next_Time : out Time) when Reset_Enabled is
+      entry Reset
+        (Next_Time : out Time) when Reset_Enabled
+      is
       begin
          Reset_Enabled := False;
          Next_Time     := Event_Queue.Peek.At_Time;
@@ -107,19 +109,18 @@ package body AFDX.Virtual_Links.Queues.Scheduler is
    end Scheduler;
 
 
-   procedure Report (Event : in out Queued_Event; Amount : in Positive) is
+   procedure Report
+     (Event  : in out Queued_Event;
+      Amount : in Positive)
+   is
    begin
-      Scheduler.Report (Event => Event, Amount => Amount);
+
+      Scheduler.Report
+        (Event  => Event,
+         Amount => Amount);
+
    end Report;
    pragma Inline (Report);
 
-
-
-begin
-
-   if Virtual_Links.Pool.Items_Out > 0 then
-      --pragma Debug("Scheduler creado para" & Virtual_Links.Pool.Number_Out'Img & " eventos.");
-      null;
-   end if;
 
 end AFDX.Virtual_Links.Queues.Scheduler;

@@ -1,4 +1,3 @@
-with Network.Stack.Up.IP_Buffers;
 with Network.Stack.Up.IP_Storage;
 with Network.Stack.Up.UDP;
 with Network.Defs.IPv4;
@@ -25,8 +24,8 @@ package body Network.Stack.Up.IP is
       Deliver  : Stream_Procesing;
       First    : Stream_Element_Offset;
       Last     : Stream_Element_Offset;
-      Buffer   : IP_Buffers.Object_Acc;
-      Ready    : BOOLEAN;
+      Buffer   : IP_Storage.Object_Acc;
+      Ready    : Boolean;
 
    begin
 
@@ -60,7 +59,7 @@ package body Network.Stack.Up.IP is
          when others   => Deliver := Sink'Access;
       end case;
 
-      if (Offset = 0) and (not MF_Flag) then
+      if (Offset = 0) and (not MF_Flag) then -- Single IP Frame, not fragmented
 
          if IP_Storage.Acceptable_IP (Destination_IP) then
             Deliver(IP_Stream(First .. Last));
@@ -69,10 +68,11 @@ package body Network.Stack.Up.IP is
       else
 
          Buffer := IP_Storage.Find
-           (IP => Destination_IP,
-            ID => Identification);
+           (Source      => Source_IP,
+            Destination => Destination_IP,
+            Identifier  => Identification);
 
-         if IP_Buffers."/="(Buffer, null) then
+         if IP_Storage."/="(Buffer, null) then
 
             -- From 8 byte blocks to bytes
             Offset := Shift_Left(Offset, 3);
