@@ -50,15 +50,15 @@ begin
 
    Ports.Pool.Add
      (Port             => 1,
-      Mode             => Ports.QUEUEING,
+      Mode             => Ports.SAMPLING,
       Virtual_Link     => 1,
       Sub_Virtual_Link => 0);
 
    Ports.Pool.Add
      (Port             => 2,
       Mode             => Ports.SAMPLING,
-      Virtual_Link     => 2,
-      Sub_Virtual_Link => 0);
+      Virtual_Link     => 1,
+      Sub_Virtual_Link => 1);
 
    pragma Debug(Put_Line("Puertos definidos correctamente."));
 

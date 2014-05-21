@@ -77,6 +77,7 @@ package AFDX.In_Buffers is
 
    private
       Buffer        : Stream_Buffers.Stream_Buffer(Size);
+      Request_Size  : Stream_Element_Count := 0;
    end Queueing_Object;
 
 end AFDX.In_Buffers;

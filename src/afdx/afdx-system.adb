@@ -20,6 +20,7 @@ package body AFDX.System is
            (Message          => Item,
             Destination_Port => This.Port.Port,
             Source_Port      => This.Port.Port,
+            Identifier       => Unsigned_16(This.Port.Port),
             Sub_Virtual_Link => This.Port.Sub_Virtual_Link,
             Single_Frame     => not This.Splitable);
 

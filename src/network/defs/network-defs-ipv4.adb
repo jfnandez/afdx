@@ -80,16 +80,16 @@ package body Network.Defs.IPv4 is
 
 
    function To_String(Addrs : in Address) return String is
+
       T : constant Unsigned_32 := Unsigned_32(Addrs);
       B1: constant Unsigned_32 := Shift_Right(T, 24) and 16#000000FF#;
       B2: constant Unsigned_32 := Shift_Right(T, 16) and 16#000000FF#;
       B3: constant Unsigned_32 := Shift_Right(T,  8) and 16#000000FF#;
       B4: constant Unsigned_32 := T and 16#000000FF#;
+
+      ST : STRING := B1'Img & B2'Img & B3'Img & B4'Img;
    begin
 
-      declare
-         ST : STRING := B1'Img & B2'Img & B3'Img & B4'Img;
-      begin
          for I in ST'RANGE loop
             if ST(I) = ' ' then
                ST(I) := '.';
@@ -97,9 +97,6 @@ package body Network.Defs.IPv4 is
          end loop;
 
          return ST(ST'First + 1 .. ST'Last);
-      end;
-
-
 
    end To_String;
 
@@ -129,7 +126,7 @@ package body Network.Defs.IPv4 is
    begin
       case Protocol is
          when UDP_Protocol => return UDP;
-         when others      => return No_Def;
+         when others       => return No_Def;
       end case;
    end Protocol_Conv;
 

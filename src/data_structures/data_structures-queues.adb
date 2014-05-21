@@ -48,11 +48,10 @@ package body Data_Structures.Queues is
    begin
 
       pragma Assert
-        (not This.Is_Full,
-         "DATA_STRUCTURES.QUEUES Put(): Full queue.");
+        (not This.Is_Full, "Data_Structures.Queues.Put: overflow error.");
 
       if This.Is_Full then
-         raise DATA_OVERFLOW;
+         raise OVERFLOW;
       end if;
 
       This.Data(This.Head) := Element;
@@ -75,11 +74,10 @@ package body Data_Structures.Queues is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.QUEUES Get(): Empty queue.");
+        (not This.Is_Empty, "Data_Structures.Queues.Get: underflow error.");
 
       if This.Is_Empty then
-         raise DATA_UNDERFLOW;
+         raise UNDERFLOW;
       end if;
 
       Element := This.Data(This.Tail);
@@ -99,11 +97,10 @@ package body Data_Structures.Queues is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.QUEUES Peek(): Empty queue.");
+        (not This.Is_Empty, "Data_Structures.Queues.Peek: underflow error.");
 
       if This.Is_Empty then
-         raise DATA_UNDERFLOW;
+         raise UNDERFLOW;
       end if;
 
       return This.Data(This.Tail);

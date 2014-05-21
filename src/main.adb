@@ -21,7 +21,7 @@ procedure Main is
 
    task body ES_SIM_1 is
       Socket : AFDX.System.Socket;
-      Buffer : Stream_Element_Array(1 .. 50);
+      Buffer : Stream_Element_Array(1 .. 5);
    begin
 
       accept Release;
@@ -36,9 +36,9 @@ procedure Main is
 
       loop
 
-         Socket.Write(Buffer);
+         delay 5.0;
 
-         delay 2.0;
+         Socket.Write(Buffer);
 
       end loop;
 
@@ -47,7 +47,7 @@ procedure Main is
 
    task body ES_SIM_2 is
       Socket : AFDX.System.Socket;
-      Buffer : Stream_Element_Array(1 .. 50);
+      Buffer : Stream_Element_Array(1 .. 200);
       Last   : Stream_Element_Offset;
    begin
 
@@ -66,8 +66,9 @@ procedure Main is
          for I in Buffer'First .. Last loop
             Put(Buffer(I)'Img);
          end loop;
+         Put_Line ("Total :" & Last'Img);
 
-         delay 0.5;
+         delay 1.0;
 
       end loop;
 

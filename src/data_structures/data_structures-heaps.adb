@@ -36,11 +36,10 @@ package body Data_Structures.Heaps is
    begin
 
       pragma Assert
-        (not This.Is_Full,
-         "DATA_STRUCTURES.HEAPS Put(): Full heap.");
+        (not This.Is_Full, "Data_Structures.Heaps.Put: overflow error.");
 
       if This.Is_Full then
-         raise DATA_OVERFLOW;
+         raise OVERFLOW;
       end if;
 
       This.Tail := This.Tail + 1;
@@ -75,11 +74,10 @@ package body Data_Structures.Heaps is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.HEAPS Get(): Empty heap.");
+        (not This.Is_Empty, "Data_Structures.Heaps.Get: underflow error.");
 
       if This.Is_Empty then
-         raise DATA_UNDERFLOW;
+         raise UNDERFLOW;
       end if;
 
       if This.Tail > 1 then
@@ -123,11 +121,10 @@ package body Data_Structures.Heaps is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.HEAPS Peek(): Empty heap.");
+        (not This.Is_Empty, "Data_Structures.Heaps.Peek: underflow error.");
 
       if This.Is_Empty then
-         raise DATA_UNDERFLOW;
+         raise UNDERFLOW;
       end if;
 
       return This.Data(1);

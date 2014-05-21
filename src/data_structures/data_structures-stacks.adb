@@ -12,11 +12,10 @@ package body Data_Structures.Stacks is
    begin
 
       pragma Assert
-        (not This.Is_Full,
-         "DATA_STRUCTURES.STACKS Put(): Full stack.");
+        (not This.Is_Full, "Data_Structures.Stacks.Put: overflow error.");
 
       if This.Is_Full then
-         raise DATA_OVERFLOW;
+         raise OVERFLOW;
       end if;
 
       This.Head := This.Head + 1;
@@ -37,11 +36,10 @@ package body Data_Structures.Stacks is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.STACKS Get(): Empty stack.");
+        (not This.Is_Empty, "Data_Structures.Stacks.Get: underflow error.");
 
       if This.Is_Empty then
-         raise DATA_UNDERFLOW;
+         raise UNDERFLOW;
       end if;
 
       Element := This.Data(This.Head);
@@ -59,8 +57,11 @@ package body Data_Structures.Stacks is
    begin
 
       pragma Assert
-        (not This.Is_Empty,
-         "DATA_STRUCTURES.STACKS Peek(): Empty stack.");
+        (not This.Is_Empty, "Data_Structures.Stacks.Peek: underflow error.");
+
+      if This.Is_Empty then
+         raise UNDERFLOW;
+      end if;
 
       return This.Data(This.Head);
 

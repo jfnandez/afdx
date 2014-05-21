@@ -6,11 +6,14 @@ package Data_Structures is
 
    pragma Pure;
 
-   DATA_OVERFLOW  : exception;
-   DATA_UNDERFLOW : exception;
+   OVERFLOW  : exception;
+   UNDERFLOW : exception;
 
-   type Data_Structure (Size : Positive) is abstract tagged limited private;
-   type Data_Structure_Acc is access all Data_Structure'Class;
+   type Data_Structure (Size : Positive) is
+     abstract tagged limited private;
+
+   type Data_Structure_Acc is
+     access all Data_Structure'Class;
 
    procedure Put
      (This    : in out Data_Structure;
@@ -20,15 +23,23 @@ package Data_Structures is
      (This    : in out Data_Structure;
       Element :    out Element_Type) is abstract;
 
-   function Peek (This : in Data_Structure) return Element_Type is abstract;
+   function Peek
+     (This : in Data_Structure) return Element_Type is abstract;
 
-   procedure Flush (This : in out Data_Structure) is abstract;
+   procedure Flush
+     (This : in out Data_Structure) is abstract;
 
-   function Is_Empty (This : in Data_Structure) return Boolean;
-   function Is_Full  (This : in Data_Structure) return Boolean;
+   function Is_Empty
+     (This : in Data_Structure) return Boolean;
 
-   function Elements_Stored (This : in Data_Structure) return Natural;
-   function Elements_Free   (This : in Data_Structure) return Natural;
+   function Is_Full
+     (This : in Data_Structure) return Boolean;
+
+   function Elements_Stored
+     (This : in Data_Structure) return Natural;
+
+   function Elements_Free
+     (This : in Data_Structure) return Natural;
 
 private
 

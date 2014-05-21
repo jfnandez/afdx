@@ -74,30 +74,6 @@ package body Network is
    end To_Hex;
 
 
-   --     -------------------------
-   --     -- Endianness Reversal --
-   --     -------------------------
-   --
-   --     pragma Warnings(OFF);
-   --
-   --     function Reverse_Endianness (X : in Unsigned_16) return Unsigned_16 is
-   --        S : constant U16_Stream := U16_To_Stream(X);
-   --     begin
-   --        return Stream_To_U16(U16_Stream'(S(2), S(1)));
-   --     end Reverse_Endianness;
-   --     pragma Inline (Reverse_Endianness);
-   --
-   --
-   --     function Reverse_Endianness (X : in Unsigned_32) return Unsigned_32 is
-   --        S : constant U32_Stream := U32_To_Stream(X);
-   --     begin
-   --        return Stream_To_U32(U32_Stream'(S(4), S(3), S(2), S(1)));
-   --     end Reverse_Endianness;
-   --     pragma Inline (Reverse_Endianness);
-   --
-   --     pragma Warnings(ON);
-
-
    --------------------------
    -- To Network Endianess --
    --------------------------
@@ -179,39 +155,29 @@ package body Network is
    function Checksum
      (Stream : in Stream_Element_Array) return Unsigned_16
    is
-      Position : Stream_Element_Offset := Stream'First + 1;
-      Total    : Unsigned_32 := 0;
-      Partial  : Unsigned_16;
+      Pos : Stream_Element_Offset := Stream'First + 1;
+      Sum : Unsigned_32 := 0;
+      Res : Unsigned_16;
    begin
 
-      Total := Unsigned_32(Stream(Stream'First));
-      Total := Shift_Left(Total, 8);
+      Sum := Shift_Left(Unsigned_32(Stream(Stream'First)), 8);
 
-      while Position < Stream'Last loop
-         Partial  := Stream_To_U16(Stream(Position .. Position + 1));
-         Total    := Total + Unsigned_32(Partial);
-         Position := Position + 2;
+      while Pos < Stream'Last loop
+         Sum := Sum + Unsigned_32(Stream_To_U16(Stream(Pos .. Pos + 1)));
+         Pos := Pos + 2;
       end loop;
 
-      if Position = Stream'Last then
-         Total := Total + Unsigned_32(Stream(Stream'Last));
+      if Pos = Stream'Last then
+         Sum := Sum + Unsigned_32(Stream(Stream'Last));
       end if;
 
-      Total := (Total and 16#FFFF#) + Shift_Right(Total, 16);
-      Total := (Total and 16#FFFF#) + Shift_Right(Total, 16);
+      Sum := (Sum and 16#FFFF#) + Shift_Right(Sum, 16);
+      Sum := (Sum and 16#FFFF#) + Shift_Right(Sum, 16);
 
-      Partial := Unsigned_16(Total);
+      Res := Unsigned_16(Sum);
+      Res := Shift_Left(Res, 4) xor Shift_Right(Res, 4);
 
-      case System.Default_Bit_Order is
-         when System.High_Order_First =>
-            -- Big Endian
-            null;
-         when System.Low_Order_First =>
-            -- Little Endian
-            Partial := Shift_Left(Partial, 4) xor Shift_Right(Partial, 4);
-      end case;
-
-      return Partial;
+      return Res;
 
    end Checksum;
 

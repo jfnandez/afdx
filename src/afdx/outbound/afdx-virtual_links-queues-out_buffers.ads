@@ -8,6 +8,7 @@ package AFDX.Virtual_Links.Queues.Out_Buffers is
       Message          : in     Stream_Element_Array;
       Destination_Port : in     Ports.Port_Range;
       Source_Port      : in     Ports.Port_Range;
+      Identifier       : in     Unsigned_16;
       Sub_Virtual_Link : in     Virtual_Links.Sub_Virtual_Link_Range;
       Single_Frame     : in     Boolean := False);
 

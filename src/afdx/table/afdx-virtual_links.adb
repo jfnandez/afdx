@@ -29,7 +29,7 @@ package body AFDX.Virtual_Links is
 
    function Destination_IP  (This : in Object) return IPv4.Address is
    begin
-      return This.IP;
+      return This.Des_IP;
    end Destination_IP;
    pragma Inline (Destination_IP);
 
@@ -133,20 +133,5 @@ package body AFDX.Virtual_Links is
       end case;
    end BAG_To_Milliseconds;
 
-
-   ------------
-   -- Gen_ID --
-   ------------
-
-   function Gen_ID
-     (VL  : in Virtual_Links.ID_Range;
-      SVL : in Virtual_Links.Sub_Virtual_Link_Range) return Unsigned_16
-   is
-      VL16  : constant Unsigned_16 := Unsigned_16(VL);
-      SVL16 : constant Unsigned_16 := Unsigned_16(SVL);
-   begin
-      return Shift_Left(VL16, 2) xor (SVL16 and 16#0003#);
-   end Gen_ID;
-   pragma Inline (Gen_ID);
 
 end AFDX.Virtual_Links;

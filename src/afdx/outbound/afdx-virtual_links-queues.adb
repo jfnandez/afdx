@@ -51,8 +51,8 @@ package body AFDX.Virtual_Links.Queues is
             Time_To_Live        => 255,
             Protocol            => IPv4.UDP,
             Header_Checksum     => 0,
-            Source_IP           => End_Systems.Get_Me.IP,
-            Destination_IP      => Virtual_Link.IP);
+            Source_IP           => Virtual_Link.Source_IP,
+            Destination_IP      => Virtual_Link.Destination_IP);
 
 
          Buffer_Initialization:

@@ -2,8 +2,9 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 use  Ada.Containers;
 
+with AFDX.Ports;
+with AFDX.Ports.Pool;
 with AFDX.Virtual_Links;
-with AFDX.Virtual_Links.Pool;
 use  AFDX;
 
 package body Network.Stack.Up.IP_Storage is
@@ -145,25 +146,29 @@ package body Network.Stack.Up.IP_Storage is
    -- Create --
    ------------
 
-   procedure Create (Cursor : in Virtual_Links.Maps.Cursor) is
+   procedure Create (Cursor : in Ports.Maps.Cursor) is
+
+      Port             : constant Ports.Object_Acc :=
+        Ports.Maps.Element(Cursor);
 
       Virtual_Link     : constant Virtual_Links.Object_Acc :=
-        Virtual_Links.Maps.Element(Cursor);
+        Port.Virtual_Link;
 
       Sub_Virtual_Link : constant Virtual_Links.Sub_Virtual_Link_Object_Acc :=
         Virtual_Link.Sub_Virtual_Link;
 
-      Buffer_Size      : Stream_Element_Count;
+      Buffer_Size      : constant Stream_Element_Count :=
+        Stream_Element_Count(Sub_Virtual_Link.RX_Size(Port.Sub_Virtual_Link));
 
    begin
+
+      if not Virtual_Link.Is_Destination then
+         return;
+      end if;
 
       IP_Set.Include(Virtual_Link.Destination_IP);
 
       --pragma Debug("Buffer llegada IP para VL:" & VL.ID'Img & '.');
-
-      for I in Virtual_Links.Sub_Virtual_Link_Range loop
-
-         Buffer_Size := Stream_Element_Count(Sub_Virtual_Link.RX_Size(I));
 
          if Buffer_Size > 0 then
 
@@ -173,20 +178,16 @@ package body Network.Stack.Up.IP_Storage is
               (Key      => Search_Object'
                  (Source      => Virtual_Link.Source_IP,
                   Destination => Virtual_Link.Destination_IP,
-                  Identifier  => Virtual_Links.Gen_ID
-                    (VL  => Virtual_Link.ID,
-                     SVL => I)),
+                  Identifier  => Unsigned_16(Port.Port)),
                New_Item => new Object(Buffer_Size));
 
          end if;
-
-      end loop;
 
    end Create;
 
 
 begin
 
-   Virtual_Links.Pool.Iterate_In(Create'Access);
+   Ports.Pool.Iterate(Create'Access);
 
 end Network.Stack.Up.IP_Storage;

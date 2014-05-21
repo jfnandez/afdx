@@ -27,6 +27,7 @@ package body AFDX.Virtual_Links.Queues.Out_Buffers is
       Message          : in     Stream_Element_Array;
       Destination_Port : in     AFDX.Ports.Port_Range;
       Source_Port      : in     AFDX.Ports.Port_Range;
+      Identifier       : in     Unsigned_16;
       Sub_Virtual_Link : in     Virtual_Links.Sub_Virtual_Link_Range;
       Single_Frame     : in     Boolean := False)
    is
@@ -36,7 +37,6 @@ package body AFDX.Virtual_Links.Queues.Out_Buffers is
       UDP_Pkt_Size  : Unsigned_16;
       Frame_Payload : Unsigned_16;
       Size_Required : Unsigned_16;
-      Identifier    : Unsigned_16;
       Total_Frames  : Positive;
       Inserted      : Boolean;
 
@@ -59,10 +59,6 @@ package body AFDX.Virtual_Links.Queues.Out_Buffers is
 
          Size_Required  := UDP_Pkt_Size +
            Unsigned_16(Total_Frames * (U16_Size + IPv4.Header_Size));
-
-         Identifier := Gen_ID
-           (VL  => This.Virtual_Link.ID,
-            SVL => Sub_Virtual_Link);
 
          -- The Message is stored in a buffer
          This.Queue.Put -- Raises AFDX.Overflow

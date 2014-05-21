@@ -68,12 +68,11 @@ package body AFDX.Virtual_Links.Pool is
 
       case (Destination'Length) is
          when 1 =>
-            VL_Candidate.IP := VL_Candidate.Src.IP;
+            VL_Candidate.Des_IP := Destination_ES.IP;
          when 2 .. AFDX.Max_Number_Of_Virtual_Links =>
-            VL_Candidate.IP := Network.Defs.IPv4.Parse(IP);
+            VL_Candidate.Des_IP := Network.Defs.IPv4.Parse(IP);
          when others => raise Program_Error;
       end case;
-
 
       VL_Candidate.Sub_VL := new Sub_Virtual_Link_Object;
 

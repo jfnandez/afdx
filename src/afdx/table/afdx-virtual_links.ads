@@ -9,11 +9,6 @@ package AFDX.Virtual_Links is
    type Sub_Virtual_Link_List is array (Sub_Virtual_Link_Range) of Boolean;
    type Sub_Virtual_Link_Size is array (Sub_Virtual_Link_Range) of NATURAL;
 
-
-   function Gen_ID
-     (VL  : in ID_Range;
-      SVL : in Sub_Virtual_Link_Range) return Unsigned_16;
-
    type BAG_Enum  is (BAG1, BAG2, BAG4, BAG8, BAG16, BAG32, BAG64, BAG128);
    type Prio_Enum is (Prio_LOW, Prio_HIGH);
 
@@ -61,7 +56,7 @@ private
          BAG    : BAG_Enum;
          Prio   : Prio_Enum;
          Lmax   : Positive;
-         IP     : IPv4.Address;
+         Des_IP : IPv4.Address;
          Src    : End_Systems.Object_Acc;
          Des    : End_Systems.Maps.Map;
          Is_Src : Boolean;
