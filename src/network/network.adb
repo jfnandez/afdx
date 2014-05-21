@@ -155,27 +155,46 @@ package body Network is
    function Checksum
      (Stream : in Stream_Element_Array) return Unsigned_16
    is
-      Pos : Stream_Element_Offset := Stream'First + 1;
+      Pos : Stream_Element_Offset := Stream'First;
       Sum : Unsigned_32 := 0;
       Res : Unsigned_16;
    begin
 
-      Sum := Shift_Left(Unsigned_32(Stream(Stream'First)), 8);
-
+      while Pos < (Stream'Last - 14) loop
+         Res := Stream_To_U16(Stream(Pos + 0  .. Pos + 1 ));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 2  .. Pos + 3 ));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 4  .. Pos + 5 ));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 6  .. Pos + 7 ));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 8  .. Pos + 9 ));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 10 .. Pos + 11));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 12 .. Pos + 13));
+         Sum := Sum + Unsigned_32(Res);
+         Res := Stream_To_U16(Stream(Pos + 14 .. Pos + 15));
+         Sum := Sum + Unsigned_32(Res);
+         Pos := Pos + 16;
+      end loop;
+      
       while Pos < Stream'Last loop
-         Sum := Sum + Unsigned_32(Stream_To_U16(Stream(Pos .. Pos + 1)));
+         Res := Stream_To_U16(Stream(Pos + 0 .. Pos + 1));
+         Sum := Sum + Unsigned_32(Res);
          Pos := Pos + 2;
       end loop;
 
       if Pos = Stream'Last then
-         Sum := Sum + Unsigned_32(Stream(Stream'Last));
+        Sum := Sum + Unsigned_32(Stream(Stream'Last));
       end if;
 
       Sum := (Sum and 16#FFFF#) + Shift_Right(Sum, 16);
       Sum := (Sum and 16#FFFF#) + Shift_Right(Sum, 16);
 
       Res := Unsigned_16(Sum);
-      Res := Shift_Left(Res, 4) xor Shift_Right(Res, 4);
+      --Res := Shift_Left(Res, 8) xor Shift_Right(Res, 8);
 
       return Res;
 
