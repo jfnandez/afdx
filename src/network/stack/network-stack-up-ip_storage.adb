@@ -1,6 +1,7 @@
 with Ada.Containers.Ordered_Maps;
-with Ada.Containers.Ordered_Sets;
 use  Ada.Containers;
+
+with AFDX.Definitions;
 
 with AFDX.Ports;
 with AFDX.Ports.Pool;
@@ -49,25 +50,7 @@ package body Network.Stack.Up.IP_Storage is
       "<"          => Search_Object_Comparator,
       "="          => "=");
 
-   package IP_Sets is new Ordered_Sets
-     (Element_Type => IPv4.Address,
-      "<" => "<",
-      "=" => "=");
-
    Buffer_Map : Buffer_Maps.Map;
-   IP_Set     : IP_Sets.Set; -- Valid Destination IP Addresses.
-
-   -------------------
-   -- Acceptable_IP --
-   -------------------
-
-   function Acceptable_IP
-     (Destination : in IPv4.Address) return Boolean
-   is
-   begin
-      return IP_Set.Contains(Destination);
-   end Acceptable_IP;
-
 
    ----------
    -- Find --
@@ -166,22 +149,20 @@ package body Network.Stack.Up.IP_Storage is
          return;
       end if;
 
-      IP_Set.Include(Virtual_Link.Destination_IP);
-
       --pragma Debug("Buffer llegada IP para VL:" & VL.ID'Img & '.');
 
-         if Buffer_Size > 0 then
+      if Buffer_Size > 0 then
 
-            --pragma Debug(" SVL:" & SVL'Img);
+         --pragma Debug(" SVL:" & SVL'Img);
 
-            Buffer_Map.Insert
-              (Key      => Search_Object'
-                 (Source      => Virtual_Link.Source_IP,
-                  Destination => Virtual_Link.Destination_IP,
-                  Identifier  => Unsigned_16(Port.Port)),
-               New_Item => new Object(Buffer_Size));
+         Buffer_Map.Insert
+           (Key      => Search_Object'
+              (Source      => Virtual_Link.Source_IP,
+               Destination => Virtual_Link.Destination_IP,
+               Identifier  => Unsigned_16(Port.Port)),
+            New_Item => new Object(Buffer_Size));
 
-         end if;
+      end if;
 
    end Create;
 

@@ -20,9 +20,6 @@ package Network.Stack.Up.IP_Storage is
       Destination : in IPv4.Address;
       Identifier  : in Unsigned_16) return Object_Acc;
 
-   function Acceptable_IP
-     (Destination : in IPv4.Address) return Boolean;
-
 private
 
    type Object (Size : Stream_Element_Count) is tagged limited

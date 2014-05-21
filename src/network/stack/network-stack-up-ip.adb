@@ -48,6 +48,15 @@ package body Network.Stack.Up.IP is
          Source_IP           => Source_IP,
          Destination_IP      => Destination_IP);
 
+      Buffer := IP_Storage.Find
+        (Source      => Source_IP,
+         Destination => Destination_IP,
+         Identifier  => Identification);
+
+      if IP_Storage."="(Buffer, null) then
+         return;
+      end if;
+
       -- From 4 byte blocks to bytes
       Header_Length := Shift_Left(Header_Length, 2);
 
@@ -61,46 +70,25 @@ package body Network.Stack.Up.IP is
 
       if (Offset = 0) and (not MF_Flag) then -- Single IP Frame, not fragmented
 
-         if IP_Storage.Acceptable_IP (Destination_IP) then
-            Deliver(IP_Stream(First .. Last));
-         end if;
+         Deliver(IP_Stream(First .. Last));
 
       else
 
-         Buffer := IP_Storage.Find
-           (Source      => Source_IP,
-            Destination => Destination_IP,
-            Identifier  => Identification);
+         -- From 8 byte blocks to bytes
+         Offset := Shift_Left(Offset, 3);
 
-         if IP_Storage."/="(Buffer, null) then
+         Buffer.Put
+           (Stream   => IP_Stream(First .. Last),
+            MF_Flag  => MF_Flag,
+            Offset   => Stream_Element_Count(Offset),
+            Is_Ready => Ready);
 
-            -- From 8 byte blocks to bytes
-            Offset := Shift_Left(Offset, 3);
-
-            Buffer.Put
-              (Stream   => IP_Stream(First .. Last),
-               MF_Flag  => MF_Flag,
-               Offset   => Stream_Element_Count(Offset),
-               Is_Ready => Ready);
-
-            if Ready then
-               Deliver(Buffer.Get);
-            end if;
-
-         else
-
-            --pragma Debug
-            --  ("IP Source: " & Defs.IPv4.To_String(Source_IP) &
-            --     " Dest : "  & Defs.IPv4.To_String(Destination_IP) &
-            --     " rejected");
-
-            null;
-
+         if Ready then
+            Deliver(Buffer.Get);
          end if;
 
       end if;
 
    end Put;
-
 
 end Network.Stack.Up.IP;
