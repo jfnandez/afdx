@@ -1,14 +1,12 @@
+with Network.Defs.UDP;
+
 with AFDX.Definitions;
 with AFDX.Ports;
 
 with AFDX.Virtual_Links.Queues.Out_Buffers;
 with AFDX.In_Buffers;
 
-use  AFDX;
-
 package AFDX.System is
-
-   package Out_Buffers renames AFDX.Virtual_Links.Queues.Out_Buffers;
 
    type Access_Mode is (Blocking, Not_Blocking);
 
@@ -29,7 +27,7 @@ package AFDX.System is
    procedure Bind
      (This : in out Socket;
       Mode : in     Access_Mode;
-      Port : in     Ports.Port_Range);
+      Port : in     Network.Defs.UDP.Port);
 
    function Freshness   (This : in Socket) return Time;
    function Is_Readable (This : in Socket) return Boolean;
@@ -38,6 +36,8 @@ package AFDX.System is
    function Mode        (This : in Socket) return Access_Mode;
 
 private
+
+   package Out_Buffers renames Virtual_Links.Queues.Out_Buffers;
 
    type Socket is new Root_Stream_Type with
       record

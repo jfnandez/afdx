@@ -1,8 +1,9 @@
 with AFDX.Ports.Pool;
-with AFDX.Virtual_Links.Queues.Scheduler.Executor;
-with Network.Link.Pump;
 with AFDX.Virtual_Links.Queues.Out_Buffers.Pool;
 with AFDX.In_Buffers.Pool;
+
+with AFDX.Virtual_Links.Queues.Scheduler.Executor;
+with AFDX.In_Buffers.Executor;
 
 package body AFDX.System is
 
@@ -20,9 +21,9 @@ package body AFDX.System is
            (Message          => Item,
             Destination_Port => This.Port.Port,
             Source_Port      => This.Port.Port,
-            Identifier       => Unsigned_16(This.Port.Port),
+            Identifier       => This.Port.Port,
             Sub_Virtual_Link => This.Port.Sub_Virtual_Link,
-            Single_Frame     => not This.Splitable);
+            Fragmentable     => This.Splitable);
 
       else
 
@@ -50,7 +51,7 @@ package body AFDX.System is
 
                This.Buffer_In.Blocking_Get
                  (Message   => Item,
-                  Length    =>  Length,
+                  Length    => Length,
                   Freshness => This.Freshness);
 
             when Not_Blocking =>
@@ -76,7 +77,7 @@ package body AFDX.System is
    procedure Bind
      (This : in out Socket;
       Mode : in     Access_Mode;
-      Port : in     Ports.Port_Range)
+      Port : in     Network.Defs.UDP.Port)
    is
    begin
 
@@ -133,7 +134,7 @@ package body AFDX.System is
 
 begin
 
-   Network.Link.Pump.Release;
+   In_Buffers.Executor.Release;
    Virtual_Links.Queues.Scheduler.Executor.Release;
 
 end AFDX.System;

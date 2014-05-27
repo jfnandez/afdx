@@ -1,5 +1,6 @@
-package body AFDX.End_Systems.Pool is
+with Network.Link;
 
+package body AFDX.End_Systems.Pool is
 
    Object_Pool : Maps.Map;
 
@@ -34,16 +35,17 @@ package body AFDX.End_Systems.Pool is
 
    procedure Add
      (ID  : in ID_Range;
-      MAC : in STRING;
-      IP : in STRING)
+      MAC : in String;
+      IP  : in String)
    is
 
       ES_Candidate : Object_Acc;
-      use type Eth.Address;
+
+      use type Network.Defs.Eth.Address;
 
       procedure Validation (Position : Maps.Cursor) is
          ES_Inserted : constant Object_Acc := Maps.Element(Position);
-         use type IPv4.Address;
+         use type Network.Defs.IPv4.Address;
       begin
          if    (ES_Inserted.ID = ES_Candidate.ID) then
             raise Definition_Error with "Duplicated ES ID.";
@@ -58,8 +60,8 @@ package body AFDX.End_Systems.Pool is
 
       ES_Candidate := new Object'
         (ID  => ID,
-         MAC => Eth.Parse(MAC),
-         IP  => IPv4.Parse(IP));
+         MAC => Network.Defs.Eth.Parse(MAC),
+         IP  => Network.Defs.IPv4.Parse(IP));
 
       Object_Pool.Iterate(Validation'Access);
 

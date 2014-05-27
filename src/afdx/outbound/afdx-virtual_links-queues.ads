@@ -1,12 +1,13 @@
-with AFDX.Ports;
+with AFDX.Definitions;
 
 with Network.Defs;
 with Network.Defs.UDP;
+with Network.Defs.UDP.Headers;
+with Network.Defs.Eth.Headers;
 with Network.Defs.Eth.V_LAN;
+with Network.Defs.IPv4.Headers;
 
 with Stream_Buffers;
-
-with AFDX.Definitions;
 
 package AFDX.Virtual_Links.Queues is
 
@@ -23,10 +24,10 @@ private
 
    type Header_Pack is
       record
-         Eth  : Network.Defs.Eth.Header;
+         Eth  : Network.Defs.Eth.Headers.Header;
          VLAN : Network.Defs.Eth.V_LAN.Header;
-         IP   : Network.Defs.IPv4.Header;
-         UDP  : Network.Defs.UDP.Header;
+         IP   : Network.Defs.IPv4.Headers.Header;
+         UDP  : Network.Defs.UDP.Headers.Header;
       end record;
 
    ------------
@@ -42,22 +43,23 @@ private
 
       procedure Put -- Raises AFDX.Overflow
         (Message          : in     Stream_Element_Array;
-         Source_Port      : in     Ports.Port_Range;
-         Destination_Port : in     Ports.Port_Range;
+         Source_Port      : in     Network.Defs.UDP.Port;
+         Destination_Port : in     Network.Defs.UDP.Port;
          Sub_Virtual_Link : in     Sub_Virtual_Link_Range;
          Identifier       : in     Unsigned_16;
-         Frame_Payload    : in     Unsigned_16;
-         Size_Required    : in     Unsigned_16;
-         Inserted         :    out Boolean);
+         Fragmentable     : in     Boolean;
+         Total_Packets    :    out Natural);
 
       procedure Get -- Raises AFDX.Underflow
-        (Frame  : out Network.Defs.Frame);
+        (Datagram  : out Stream_Element_Array;
+         Last      : out Stream_Element_Offset);
 
    private
-      Virtual_Link   : Virtual_Links.Object_Acc;
-      Buffer_Pointer : Sub_Virtual_Link_Range;
-      Buffers        : Buffer_Array;
-      Headers        : Header_Pack;
+      Max_Packet_Size : Stream_Element_Count;
+      Virtual_Link    : Virtual_Links.Object_Acc;
+      Buffer_Pointer  : Sub_Virtual_Link_Range;
+      Buffers         : Buffer_Array;
+      Headers         : Header_Pack;
    end Object;
 
 

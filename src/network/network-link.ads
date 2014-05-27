@@ -1,13 +1,11 @@
 with Network.Defs.Eth;
 with Network.Defs;
 
-use Network.Defs;
-
 package Network.Link is
 
-   procedure Write (The_Frame : in       Frame);
-   procedure Read  (The_Frame :     out  Frame);
+   procedure Write (The_Frame : in       Defs.Frame);
+   procedure Read  (The_Frame :     out  Defs.Frame);
 
-   function Address return Eth.Address;
+   function Address return Defs.Eth.Address;
 
 end Network.Link;

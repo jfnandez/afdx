@@ -1,3 +1,5 @@
+with Ada.Containers.Ordered_Maps;
+
 package AFDX.End_Systems is
 
    type ID_Range is range 1 .. Max_Number_Of_End_Systems;
@@ -7,8 +9,8 @@ package AFDX.End_Systems is
    type Object_Acc is access all Object'Class;
 
    function ID     (This : in Object) return ID_Range;
-   function MAC    (This : in Object) return Eth.Address;
-   function IP     (This : in Object) return IPv4.Address;
+   function MAC    (This : in Object) return Network.Defs.Eth.Address;
+   function IP     (This : in Object) return Network.Defs.IPv4.Address;
 
    function Its_Me (This : in Object) return Boolean;
    function Get_Me return Object_Acc;
@@ -26,8 +28,8 @@ private
    type Object is tagged limited
       record
          ID   : ID_Range;
-         MAC  : Eth.Address;
-         IP   : IPv4.Address;
+         MAC  : Network.Defs.Eth.Address;
+         IP   : Network.Defs.IPv4.Address;
       end record;
 
    This_Object : Object_Acc := null;

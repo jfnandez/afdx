@@ -4,56 +4,37 @@ package body Network.Defs.Eth.V_LAN is
    DROP_MASK : constant := 2#00010000_00000000#;
    PRIO_MASK : constant := 2#11100000_00000000#;
 
-   procedure Set
-     (This          :    out Header;
-      Prio          : in     Priority;
-      Iden          : in     Identifier;
-      Drop_Elegible : in     Boolean;
-      Ethertype     : in     Eth.EtherTypes)
-   is
-      U16 : Unsigned_16;
+   procedure To_Header (This : out Header; Stream : in Header_Stream) is
+      U16 : constant Unsigned_16 := From_Net16(Stream(0 .. 1));
+   begin
+      This.Priority      := Priorities(Shift_Right(U16, 13));
+      This.Identifier    := Identifiers(U16 and IDEN_MASK);
+      This.Drop_Elegible := (U16 and DROP_MASK) = DROP_MASK;
+      This.Ethertype     := Eth.Ether_Conv(From_Net16(Stream(2 .. 3)));
+   end To_Header;
+
+
+   function To_Stream (This : in Header) return Header_Stream is
+      U_IDEN : Unsigned_16;
+      U_DROP : Unsigned_16;
+      U_PRIO : Unsigned_16;
+      Stream : Header_Stream;
    begin
 
-      U16 := Unsigned_16(Iden) and IDEN_MASK;
-      U16 := U16 xor (Shift_Left(Unsigned_16(Prio), 13) and PRIO_MASK);
+      U_IDEN := Unsigned_16(This.Identifier) and IDEN_MASK;
+      U_PRIO := Shift_Left(Unsigned_16(This.Priority), 13) and PRIO_MASK;
 
-      if Drop_Elegible then
-         U16 := U16 xor DROP_MASK;
-      end if;
+      case This.Drop_Elegible is
+         when True  => U_DROP := DROP_MASK;
+         when False => U_DROP := 0;
+      end case;
 
-      This.Stream(1..2) := To_Net16(U16);
-      This.Stream(3..4) := To_Net16(Eth.Ether_Conv(Ethertype));
+      Stream(0 .. 1) := To_Net16(U_IDEN xor U_DROP xor U_PRIO);
+      Stream(2 .. 3) := To_Net16(Eth.Ether_Conv(This.EtherType));
 
-   end Set;
+      return Stream;
 
-
-   procedure Set (This : out Header; Stream : in Header_Stream) is
-   begin
-      This.Stream := Stream;
-   end Set;
-
-
-   procedure Get
-     (This          : in     Header;
-      Prio          :    out Priority;
-      Iden          :    out Identifier;
-      Drop_Elegible :    out Boolean;
-      Ethertype     :    out Eth.EtherTypes)
-   is
-      U16 : constant Unsigned_16 := From_Net16(This.Stream(1 .. 2));
-   begin
-      Prio          := Priority(Shift_Right(U16, 13));
-      Iden          := Identifier(U16 and IDEN_MASK);
-      Drop_Elegible := (U16 and DROP_MASK) = DROP_MASK;
-      Ethertype     := Eth.Ether_Conv(From_Net16(This.Stream(3 .. 4)));
-   end Get;
-
-
-   function Get (This : in Header) return Header_Stream is
-   begin
-      return This.Stream;
-   end Get;
-
+   end To_Stream;
 
 end Network.Defs.Eth.V_LAN;
 

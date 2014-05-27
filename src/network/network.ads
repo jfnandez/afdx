@@ -7,17 +7,17 @@ package Network is
 
    pragma Pure;
 
+   type Unsigned_4  is mod 2**4;
+   type Unsigned_13 is mod 2**13;
+
 private
 
-   Parsing_Error : exception;
+   function Parse_B16(C : in Character)  return Unsigned_8;
+   function Parse_B10(C : in Character)  return Unsigned_8;
+   function To_Hex   (X : in Unsigned_8) return String;
 
-   function Parse_B16(C : in Character) return Unsigned_8;
-   function Parse_B10(C : in Character) return Unsigned_8;
-
-   function To_Hex (N : in Unsigned_8) return STRING;
-
-   subtype U16_Stream is Stream_Element_Array(1 .. 2);
-   subtype U32_Stream is Stream_Element_Array(1 .. 4);
+   subtype U16_Stream is Stream_Element_Array(0 .. 1);
+   subtype U32_Stream is Stream_Element_Array(0 .. 3);
 
    function To_Net16(X : in Unsigned_16) return U16_Stream;
    function To_Net32(X : in Unsigned_32) return U32_Stream;
@@ -26,21 +26,23 @@ private
    function From_Net32(Stream : in U32_Stream) return Unsigned_32;
 
    function U16_To_Stream is new Ada.Unchecked_Conversion
-     (Source => Unsigned_16,
-      Target => U16_Stream);
+       (Source => Unsigned_16,
+        Target => U16_Stream);
 
    function  U32_To_Stream is new Ada.Unchecked_Conversion
-     (Source => Unsigned_32,
-      Target => U32_Stream);
+       (Source => Unsigned_32,
+        Target => U32_Stream);
 
    function Stream_To_U16 is new Ada.Unchecked_Conversion
-     (Source => U16_Stream,
-      Target => Unsigned_16);
+       (Source => U16_Stream,
+        Target => Unsigned_16);
 
    function Stream_To_U32 is new Ada.Unchecked_Conversion
-     (Source => U32_Stream,
-      Target => Unsigned_32);
+       (Source => U32_Stream,
+        Target => Unsigned_32);
 
-   function Checksum (Stream : in Stream_Element_Array) return Unsigned_16;
+   function Checksum
+     (Stream : in Stream_Element_Array;
+      Carry  : in Unsigned_16 := 0) return Unsigned_16;
 
 end Network;

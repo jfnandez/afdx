@@ -16,7 +16,7 @@ package body AFDX.End_Systems is
    -- MAC --
    ---------
 
-   function MAC (This : in Object) return Eth.Address is
+   function MAC (This : in Object) return Network.Defs.Eth.Address is
    begin
       return This.MAC;
    end MAC;
@@ -27,7 +27,7 @@ package body AFDX.End_Systems is
    -- IP --
    --------
 
-   function IP (This : in Object) return IPv4.Address is
+   function IP (This : in Object) return Network.Defs.IPv4.Address is
    begin
       return This.IP;
    end IP;

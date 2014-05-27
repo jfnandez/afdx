@@ -1,5 +1,11 @@
 with AFDX.Virtual_Links.Pool;
 
+with Network.Stack.Down.Eth;
+with Network.Stack.Down.Eth.V_LAN;
+with Network.Stack.Down.IPv4;
+with Network.Stack.Down.UDP;
+
+
 package body AFDX.Virtual_Links.Queues is
 
    ------------------- OBJETO PRINCIPAL -------------------
@@ -14,45 +20,40 @@ package body AFDX.Virtual_Links.Queues is
 
          -- Ethernet Header formation
 
-         Headers.Eth.Set
-           (Destination => Eth.Broadcast, --??
-            Source      => End_Systems.Get_Me.MAC,
-            EtherType   => Eth.VLAN);
+         Headers.Eth.Destination := Network.Defs.Eth.Broadcast;
+         Headers.Eth.Source      := Virtual_Link.Src.MAC;
+         Headers.Eth.EtherType   := Network.Defs.Eth.VLAN;
 
          -- VLAN Header formation
 
+         Headers.VLAN.Identifier    := 0;
+         Headers.VLAN.Drop_Elegible := False;
+         Headers.VLAN.EtherType     := Network.Defs.Eth.IPv4;
+
          case Virtual_Link.Priority is
-
-            when Prio_HIGH =>
-               Headers.VLAN.Set
-                 (Prio          => 7,
-                  Iden          => 0,
-                  Drop_Elegible => False,
-                  Ethertype     => Eth.IPv4);
-
-            when Prio_LOW  =>
-               Headers.VLAN.Set
-                 (Prio          => 6,
-                  Iden          => 0,
-                  Drop_Elegible => False,
-                  Ethertype     => Eth.IPv4);
+            when Prio_HIGH => Headers.VLAN.Priority := 7;
+            when Prio_LOW  => Headers.VLAN.Priority := 6;
          end case;
 
          -- IP Header formation
 
-         Headers.IP.Set
-           (Version             => 4,
-            Header_Length       => 5,
-            Total_Length        => 0,
-            Identification      => 0,
-            Dont_Fragment_Flag  => True,
-            More_Fragments_Flag => False,
-            Fragment_Offset     => 0,
-            Time_To_Live        => 255,
-            Protocol            => IPv4.UDP,
-            Header_Checksum     => 0,
-            Source_IP           => Virtual_Link.Source_IP,
-            Destination_IP      => Virtual_Link.Destination_IP);
+         Headers.IP.Version         := 4;
+         Headers.IP.Header_Length   := 5;
+         Headers.IP.Services        := 0;
+         Headers.IP.Total_Length    := 0;
+         Headers.IP.Identification  := 0;
+         Headers.IP.Dont_Fragment   := True;
+         Headers.IP.More_Fragments  := False;
+         Headers.IP.Fragment_Offset := 0;
+         Headers.IP.Time_To_Live    := 255;
+         Headers.IP.Protocol        := Network.Defs.IPv4.UDP;
+         Headers.IP.Checksum        := 0;
+         Headers.IP.Source          := Virtual_Link.Source_IP;
+         Headers.IP.Destination     := Virtual_Link.Destination_IP;
+
+         Max_Packet_Size := Stream_Element_Count(Virtual_Link.Lmax) -
+           (Network.Defs.Eth.Headers.Header_Size +
+              Network.Defs.Eth.V_LAN.Header_Size);
 
 
          Buffer_Initialization:
@@ -79,139 +80,37 @@ package body AFDX.Virtual_Links.Queues is
 
       procedure Put -- Raises AFDX.Overflow
         (Message          : in     Stream_Element_Array;
-         Source_Port      : in     Ports.Port_Range;
-         Destination_Port : in     Ports.Port_Range;
+         Source_Port      : in     Network.Defs.UDP.Port;
+         Destination_Port : in     Network.Defs.UDP.Port;
          Sub_Virtual_Link : in     Sub_Virtual_Link_Range;
          Identifier       : in     Unsigned_16;
-         Frame_Payload    : in     Unsigned_16;
-         Size_Required    : in     Unsigned_16;
-         Inserted         :    out Boolean)
+         Fragmentable     : in     Boolean;
+         Total_Packets    :    out Natural)
       is
-
-         Buffer          : constant access Stream_Buffers.Stream_Buffer :=
-           Buffers(Sub_Virtual_Link);
-
-         Is_Storable     : constant Boolean :=
-           Unsigned_16(Buffer.Writable_Elements) >= Size_Required;
-
-         IP_Header_Size  : constant :=
-           IPv4.Header_Size;
-
-         Packet_Size     : constant Unsigned_16 :=
-           Message'Length + UDP.Header_Size;
-
-         Offset_Increase : constant Unsigned_16 :=
-           Shift_Right(Frame_Payload, 3);
-
-         Offset : Unsigned_16 := 0;
-         Length : Unsigned_16;
-
-         First  : Stream_Element_Count;
-         Last   : Stream_Element_Count;
-
-         Remain : Unsigned_16 := Packet_Size;
-
+         Result : Network.Stack.Down.IPv4.Error;
       begin
 
-         Inserted := False;
+         Headers.IP.Identification  := Identifier;
+         Headers.IP.Fragment_Offset := 0;
+         Headers.IP.Dont_Fragment   := True;
+         Headers.IP.More_Fragments  := False;
 
-         if Is_Storable then
-
-            Headers.IP.Identification(Identifier);
-            Headers.IP.Fragment_Offset(Offset);
-
-            Headers.UDP.Set
-              (Src_Port => Unsigned_16(Source_Port),
-               Des_Port => Unsigned_16(Destination_Port),
-               Length   => Packet_Size,
-               Checksum => 0);
+         Headers.UDP.Src_Port := Source_Port;
+         Headers.UDP.Des_Port := Destination_Port;
 
 
-            -----------------
-            -- First Frame --
-            -----------------
-
-            First := Message'First;
-
-            if Remain > Frame_Payload then
-               -- The message doesn't fit in just one frame
-               Length := IP_Header_Size + Frame_Payload;
-               Headers.IP.Total_Length(Length);
-               Headers.IP.Set_MF_Flag;
-
-               Last   := First + Stream_Element_Count(Frame_Payload - UDP.Header_Size) - 1;
-               Remain := Remain - Frame_Payload;
-            else
-               -- The message does fit in just one frame
-               Length := IP_Header_Size + Remain;
-               Headers.IP.Total_Length(Length);
-               Headers.IP.Reset_MF_Flag;
-
-               Last   := Message'Last;
-               Remain := 0;
-            end if;
-
-            Headers.IP.Set_Checksum;
-            Unsigned_16'Write(Buffer, Length);
-            Buffer.Write(Headers.IP.Get);
-            Buffer.Write(Headers.UDP.Get);
-            Buffer.Write(Message (First .. Last));
-
-            ----------------------
-            -- Remaining Frames --
-            ----------------------
-
-            while Remain > 0 loop
-               -- Remaing characters of the message
-
-               First := Last + 1;
-               Offset := Offset + Offset_Increase;
-               Headers.IP.Fragment_Offset(Offset);
-
-               if Remain > Frame_Payload then
-                  -- The message doesn't fit in a frame
-                  -- No cambian
-
-                  Last   := First + Stream_Element_Count(Frame_Payload) - 1;
-                  Remain := Remain - Frame_Payload;
-               else
-                  -- The message does fit in just one frame
-
-                  Length := IP_Header_Size + Remain;
-                  Headers.IP.Total_Length(Length);
-                  Headers.IP.Reset_MF_Flag;
-
-                  Last   := Message'Last;
-                  Remain := 0;
-               end if;
-
-               Headers.IP.Set_Checksum;
-               Unsigned_16'Write(Buffer, Length);
-               Buffer.Write(Headers.IP.Get);
-               Buffer.Write(Message (First .. Last));
-
-            end loop;
-
-            Inserted := True;
-
-         else
-
-            Last := Message'Last;
-            pragma Debug(Put_Line("Outbound package discarded due to overflow."));
-            Put_Line("Outbound package discarded due to overflow." & Last'Img);
-            null;
-
-         end if;
-
-      exception
-
-         when Stream_Buffers.BUFFER_OVERFLOW =>
-            pragma Assert(False, "Not expected error DEBUG!.");
-            raise AFDX.Overflow with "mal";
-
-         when others =>
-            pragma Assert(False, "Muerto");
-            raise Program_Error;
+         Network.Stack.Down.IPv4.Push
+           (Header          => Headers.IP,
+            Storage         => Buffers(Sub_Virtual_Link),
+            Max_Packet_Size => Max_Packet_Size,
+            Fragmentable    => Fragmentable,
+            Message         => Network.Stack.Down.UDP.Push
+              (Header          => Headers.UDP,
+               Source          => Headers.IP.Source,
+               Destination     => Headers.IP.Destination,
+               Message         => Message),
+            Total_Packets   => Total_Packets,
+            Result          => Result);
 
       end Put;
 
@@ -220,55 +119,41 @@ package body AFDX.Virtual_Links.Queues is
 
 
 
-      procedure Get (Frame  : out Network.Defs.Frame) is
 
+      procedure Get -- Raises AFDX.Underflow
+        (Datagram  : out Stream_Element_Array;
+         Last      : out Stream_Element_Offset)
+      is
          Buffer : access Stream_Buffers.Stream_Buffer;
-
-         Length    : Stream_Element_Offset;
-         First     : Stream_Element_Offset;
-         Last      : Stream_Element_Offset;
-         Last_Read : Stream_Element_Offset;
-
       begin
 
-         Sub_Virtual_Link_Round_Robin:
          for I in Sub_Virtual_Link_Range loop
             Buffer_Pointer := Buffer_Pointer + 1;
             Buffer := Buffers(Buffer_Pointer);
             exit when (Buffer /= null) and then (not Buffer.Is_Empty);
             Buffer := null;
-         end loop Sub_Virtual_Link_Round_Robin;
+         end loop;
 
-         if (Buffer /= null) then
+         pragma Assert (Buffer /= null);
 
-            Length := Stream_Element_Offset(Unsigned_16'Input(Buffer));
+         declare
+            Eth_Frame : constant Stream_Element_Array :=
+              Network.Stack.Down.Eth.Push
+                (Header  => Headers.Eth,
+                 Message => Network.Stack.Down.Eth.V_LAN.Push
+                   (Header  => Headers.VLAN,
+                    Message => Stream_Element_Array'Input(Buffer)));
+         begin
+            Last := Datagram'First + Eth_Frame'Length - 1;
+            Datagram(Datagram'First .. Last) := Eth_Frame;
+         exception
+            when others =>
+               Put_Line("Aqui1");
+         end;
 
-            First := 1;
-            Last  := Eth.Header_Size;
-            Frame.Data(First .. Last) := Headers.Eth.Get;
-
-            First := Last + 1;
-            Last  := Last + Eth.V_LAN.Header_Size;
-            Frame.Data(First .. Last) := Headers.VLAN.Get;
-
-            First := Last + 1;
-            Last  := Last + Length;
-            Frame.Length := Last;
-
-            Buffer.Read(Frame.Data(First .. Last), Last_Read);
-
-            if Last /= Last_Read then
-               raise Program_Error with "Buffer underflow error.";
-            end if;
-
-         else
-            raise Program_Error with "Not found any SVL ready.";
-         end if;
-
-
-      exception
-
+exception
          when others =>
+            Put_Line("Aqui2");
             raise Program_Error with "Outbound Buffer error (Get procedure)";
 
       end Get;

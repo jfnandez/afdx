@@ -16,7 +16,7 @@ package body AFDX.Virtual_Links is
    -- Source_IP --
    ---------------
 
-   function Source_IP  (This : in Object) return IPv4.Address is
+   function Source_IP  (This : in Object) return Network.Defs.IPv4.Address is
    begin
       return This.Src.IP;
    end Source_IP;
@@ -27,7 +27,7 @@ package body AFDX.Virtual_Links is
    -- Destination_IP --
    --------------------
 
-   function Destination_IP  (This : in Object) return IPv4.Address is
+   function Destination_IP  (This : in Object) return Network.Defs.IPv4.Address is
    begin
       return This.Des_IP;
    end Destination_IP;

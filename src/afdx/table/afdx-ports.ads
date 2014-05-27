@@ -1,9 +1,10 @@
+with Ada.Containers.Ordered_Maps;
+
+with Network.Defs.UDP;
+
 with AFDX.Virtual_Links;
 
 package AFDX.Ports is
-
-   type Port_Range is range 0 .. Max_Number_Of_Ports;
-   for Port_Range'Size use 16;
 
    type Port_Type  is (QUEUEING, SAMPLING);
 
@@ -11,7 +12,7 @@ package AFDX.Ports is
    type Object_Acc is access all Object;
 
    function Port
-     (This : in Object) return Port_Range;
+     (This : in Object) return Network.Defs.UDP.Port;
 
    function Mode
      (This : in Object) return Port_Type;
@@ -23,7 +24,7 @@ package AFDX.Ports is
      (This : in Object) return Virtual_Links.Sub_Virtual_Link_Range;
 
    package Maps is new Ada.Containers.Ordered_Maps
-     (Key_Type     => Port_Range,
+     (Key_Type     => Network.Defs.UDP.Port,
       Element_Type => Object_Acc,
       "<"          => "<",
       "="          => "=");
@@ -34,7 +35,7 @@ private
 
    type Object is tagged limited
       record
-         Port             : Port_Range;
+         Port             : Network.Defs.UDP.Port;
          Mode             : Port_Type;
          Virtual_Link     : Virtual_Links.Object_Acc;
          Sub_Virtual_Link : Virtual_Links.Sub_Virtual_Link_Range;

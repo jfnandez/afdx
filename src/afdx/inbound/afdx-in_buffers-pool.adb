@@ -1,42 +1,23 @@
-with Ada.Containers.Ordered_Maps;
 with AFDX.Ports.Pool;
+
+with Network.Stack.Up.IPv4;
+
+with AFDX.Definitions;
 
 package body AFDX.In_Buffers.Pool is
 
-
-   package Maps is new Ada.Containers.Ordered_Maps
-     (Key_Type     => Ports.Port_Range,
-      "<"          => Ports."<",
-      Element_Type => Object_Acc,
-      "="          => "=");
-
-   Map : Maps.Map;
-
-   function Retrieve
-     (Port : in Ports.Port_Range) return Object_Acc
-   is
-      Cursor : constant Maps.Cursor := Map.Find(Port);
+   function Retrieve (Port : in Network.Defs.UDP.Port) return Object_Acc is
    begin
-      if Maps.Has_Element(Cursor) then
-         return Maps.Element(Cursor);
-      else
-         return null;
-      end if;
+      return Object_Acc(Network.Stack.Up.UDP.Retrieve(Port));
    end Retrieve;
 
-   function Contains
-     (Port : in Ports.Port_Range) return Boolean
-   is
+   function Contains (Port : in Network.Defs.UDP.Port) return Boolean is
    begin
-      return Map.Contains(Port);
+      return Network.Stack.Up.UDP.Contains(Port);
    end Contains;
 
 
-
-
-   procedure Create
-     (Cursor : Ports.Maps.Cursor)
-   is
+   procedure Create (Cursor : Ports.Maps.Cursor) is
       Port        : Ports.Object_Acc;
       Buffer      : Object_Acc;
       Buffer_Size : Stream_Element_Count;
@@ -65,14 +46,19 @@ package body AFDX.In_Buffers.Pool is
 
          end case;
 
-         Map.Insert
-           (Key      => Port.Port,
-            New_Item => Buffer);
+         Network.Stack.Up.IPv4.Enable
+           (Source      => Port.Virtual_Link.Source_IP,
+            Destination => Port.Virtual_Link.Destination_IP,
+            Identifier  => Port.Port,
+            Buffer_Size => Buffer_Size);
+
+         Network.Stack.Up.UDP.Associate
+           (Port   => Port.Port,
+            Buffer => Network.Stack.Up.UDP.Storage_Acc(Buffer));
 
       end if;
 
    end Create;
-
 
 begin
 

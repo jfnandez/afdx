@@ -1,7 +1,7 @@
 project Proyecto is
 
    for Main use ("main.adb");
-   for Source_Dirs use ("src", "src/afdx", "src/afdx/table", "src/afdx/inbound", "src/afdx/outbound", "src/network", "src/network/defs", "src/network/stack", "src/data_structures", "src/buffers");
+   for Source_Dirs use ("src", "src/afdx", "src/afdx/table", "src/afdx/inbound", "src/afdx/outbound", "src/network", "src/network/defs", "src/network/stack", "src/network/stack/up", "src/network/stack/down", "src/data_structures", "src/buffers");
    for Object_Dir use "obj";
 
    package Compiler is
@@ -12,7 +12,5 @@ project Proyecto is
       for Default_Switches ("ada") use ("-g");
    end Builder;
 
-   package Ide is
-   end Ide;
-
 end Proyecto;
+

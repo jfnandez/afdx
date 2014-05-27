@@ -1,3 +1,5 @@
+with Ada.Containers.Ordered_Maps;
+
 with AFDX.End_Systems;
 
 package AFDX.Virtual_Links is
@@ -22,8 +24,8 @@ package AFDX.Virtual_Links is
    function ID               (This : in Object) return ID_Range;
    function Priority         (This : in Object) return Prio_Enum;
    function Lmax             (This : in Object) return Positive;
-   function Source_IP        (This : in Object) return IPv4.Address;
-   function Destination_IP   (This : in Object) return IPv4.Address;
+   function Source_IP        (This : in Object) return Network.Defs.IPv4.Address;
+   function Destination_IP   (This : in Object) return Network.Defs.IPv4.Address;
    function Is_Source        (This : in Object) return Boolean;
    function Is_Destination   (This : in Object) return Boolean;
    function Sub_Virtual_Link (This : in Object) return Sub_Virtual_Link_Object_Acc;
@@ -56,7 +58,7 @@ private
          BAG    : BAG_Enum;
          Prio   : Prio_Enum;
          Lmax   : Positive;
-         Des_IP : IPv4.Address;
+         Des_IP : Network.Defs.IPv4.Address;
          Src    : End_Systems.Object_Acc;
          Des    : End_Systems.Maps.Map;
          Is_Src : Boolean;

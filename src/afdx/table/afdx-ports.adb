@@ -1,6 +1,6 @@
 package body AFDX.Ports is
 
-   function Port (This : in Object) return Port_Range is
+   function Port (This : in Object) return Network.Defs.UDP.Port is
    begin
       return This.Port;
    end Port;

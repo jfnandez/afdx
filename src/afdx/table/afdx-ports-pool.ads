@@ -4,13 +4,13 @@ package AFDX.Ports.Pool is
    Not_Found        : exception;
 
    procedure Add
-     (Port             : in Port_Range;
+     (Port             : in Network.Defs.UDP.Port;
       Mode             : in Port_Type;
       Virtual_Link     : in Virtual_Links.ID_Range;
       Sub_Virtual_Link : in Virtual_Links.Sub_Virtual_Link_Range);
 
-   function Contains(Port : in Port_Range) return Boolean;
-   function Retrieve(Port : in Port_Range) return Object_Acc;
+   function Contains(Port : in Network.Defs.UDP.Port) return Boolean;
+   function Retrieve(Port : in Network.Defs.UDP.Port) return Object_Acc;
 
    procedure Iterate          (Action : in Action_Procedure);
    procedure Iterate_QUEUEING (Action : in Action_Procedure);

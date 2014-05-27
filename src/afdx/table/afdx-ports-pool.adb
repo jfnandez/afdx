@@ -13,7 +13,7 @@ package body AFDX.Ports.Pool is
    ---------
 
    procedure Add
-     (Port             : in Port_Range;
+     (Port             : in Network.Defs.UDP.Port;
       Mode             : in Port_Type;
       Virtual_Link     : in Virtual_Links.ID_Range;
       Sub_Virtual_Link : in Virtual_Links.Sub_Virtual_Link_Range)
@@ -63,7 +63,7 @@ package body AFDX.Ports.Pool is
    -- Contains --
    --------------
 
-   function Contains (Port : in Port_Range) return Boolean is
+   function Contains (Port : in Network.Defs.UDP.Port) return Boolean is
    begin
       return Object_Pool.Contains(Port);
    end Contains;
@@ -73,7 +73,7 @@ package body AFDX.Ports.Pool is
    -- Retrieve --
    --------------
 
-   function Retrieve (Port : in Port_Range) return Object_Acc is
+   function Retrieve (Port : in Network.Defs.UDP.Port) return Object_Acc is
       Cursor : constant Maps.Cursor := Object_Pool.Find(Port);
    begin
       if Maps.Has_Element(Cursor) then

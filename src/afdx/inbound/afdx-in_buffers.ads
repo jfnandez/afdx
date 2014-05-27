@@ -1,14 +1,13 @@
+with Network.Stack.Up.UDP;
+
 with Stream_Buffers;
 with AFDX.Definitions;
 
 package AFDX.In_Buffers is
 
-   type Object is protected interface;
+   type Object is protected interface and Network.Stack.Up.UDP.Storage;
    type Object_Acc is access all Object'Class;
 
-   procedure Put
-     (This       : in out Object;
-      Stream     : in     Stream_Element_Array) is abstract;
 
    procedure Blocking_Get
      (This       : in out Object;

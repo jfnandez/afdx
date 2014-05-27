@@ -1,3 +1,5 @@
+with Network.Link;
+
 package body AFDX.Virtual_Links.Queues.Scheduler.Executor is
 
    Executor_Released : Boolean := False;
@@ -9,7 +11,7 @@ package body AFDX.Virtual_Links.Queues.Scheduler.Executor is
 
 
    task body Executor is
-      My_Frame  : Network.Defs.Frame;
+      Frame     : Network.Defs.Frame;
       Buffer    : Virtual_Links.Queues.Object_Acc;
       At_Time   : Time;
       Next_Time : Time := Time_Last;
@@ -26,15 +28,15 @@ package body AFDX.Virtual_Links.Queues.Scheduler.Executor is
          or
             delay until Next_Time;
             Scheduler.Get(Buffer, At_Time, Next_Time);
-            Buffer.Get(My_Frame);
-            Network.Link.Write(My_Frame);
+            Buffer.Get(Frame.Data, Frame.Length);
+            Network.Link.Write(Frame);
          end select;
       end loop;
 
    exception
 
       when others =>
-         --pragma Debug("Out_Buffer.Dispatcher.Executor.Execute is dead.");
+         Put_Line("Outb Executor Died");
          raise Program_Error;
 
    end Executor;

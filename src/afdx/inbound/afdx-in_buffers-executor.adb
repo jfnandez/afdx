@@ -1,10 +1,8 @@
-with Ada.Text_IO;
-use Ada.Text_IO;
-
+with Network.Defs;
+with Network.Link;
 with Network.Stack.Up.Eth;
-with AFDX;
 
-package body Network.Link.Pump is
+package body AFDX.In_Buffers.Executor is
 
    task Executor is
       pragma Priority(AFDX.Inbound_Executor_Prio);
@@ -12,14 +10,14 @@ package body Network.Link.Pump is
    end Executor;
 
    task Body Executor is
-      Frame : Defs.Frame;
+      Frame : Network.Defs.Frame;
    begin
 
       accept Release;
 
       loop
          Network.Link.Read(Frame);
-         Network.Stack.Up.Eth.Put(Frame.Data(1 .. Frame.Length));
+         Network.Stack.Up.Eth.Push(Frame.Data(1 .. Frame.Length));
       end loop;
 
    exception
@@ -39,4 +37,4 @@ begin
 
    Put_Line("Network-Link-Pump Ready");
 
-end Network.Link.Pump;
+end AFDX.In_Buffers.Executor;

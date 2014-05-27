@@ -30,7 +30,7 @@ begin
       Lmax        => 200,
       IP          => "",
       Source      => 1,
-      Destination => (1 => 1),
+      Destination => (1 => 2),
       TX_Size     => (0 => 3500, 1 => 3500, 2 => 3500, 3 => 3500),
       RX_Size     => (0 => 3500, 1 => 3500, 2 => 3500, 3 => 3500));
 
@@ -40,7 +40,7 @@ begin
       Priority    => Virtual_Links.Prio_LOW,
       Lmax        => 200,
       IP          => "",
-      Source      => 1,
+      Source      => 2,
       Destination => (1 => 1),
       TX_Size     => (0 => 3500, 1 => 0, 2 => 0, 3 => 0),
       RX_Size     => (0 => 3500, 1 => 0, 2 => 0, 3 => 0));
@@ -50,15 +50,15 @@ begin
 
    Ports.Pool.Add
      (Port             => 1,
-      Mode             => Ports.SAMPLING,
+      Mode             => Ports.QUEUEING,
       Virtual_Link     => 1,
       Sub_Virtual_Link => 0);
 
    Ports.Pool.Add
      (Port             => 2,
       Mode             => Ports.SAMPLING,
-      Virtual_Link     => 1,
-      Sub_Virtual_Link => 1);
+      Virtual_Link     => 2,
+      Sub_Virtual_Link => 0);
 
    pragma Debug(Put_Line("Puertos definidos correctamente."));
 
